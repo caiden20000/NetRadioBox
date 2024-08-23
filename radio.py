@@ -158,14 +158,14 @@ class UserInterface:
         station_font = ImageFont.truetype(FONT_RESOURCE, 10)
 
         # Draw time
-        draw.text(self.time, (5, 0), font = time_font, fill = 0)
+        draw.text((5, 0), self.time, font = time_font, fill = 0)
         # Draw station number
-        draw.text(self.station_number, (5, 45), font = station_font, fill = 0)
+        draw.text((5, 45), self.station_number, font = station_font, fill = 0)
         # Draw separator
         draw.line([(27, 42), (27, 58)], None, 1)
         # Draw track name
         scrolled_track_name = self._get_scrolling_track_name(13, 300)
-        draw.text(self.station_number, (31, 45), font = station_font, fill = 0)
+        draw.text((31, 45), self.station_number, font = station_font, fill = 0)
         # Draw modes
         # TODO: Draw the mode circles
         # TODO: Fill in the circles that are activated
