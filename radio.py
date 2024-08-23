@@ -47,7 +47,7 @@ import asyncio, math, evdev, time, threading, vlc
 import OLED_1in51 # Located in libdir
 from PIL import Image,ImageDraw,ImageFont
 from enum import Enum
-
+from types import FunctionType as function
 
 ##########
 ### Constants
