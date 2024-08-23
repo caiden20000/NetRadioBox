@@ -165,7 +165,7 @@ class UserInterface:
         draw.line([(27, 42), (27, 58)], None, 1)
         # Draw track name
         scrolled_track_name = self._get_scrolling_track_name(13, 300)
-        draw.text((31, 45), self.scrolled_track_name, font = station_font, fill = 0)
+        draw.text((31, 45), scrolled_track_name, font = station_font, fill = 0)
         # Draw modes
         # TODO: Draw the mode circles
         # TODO: Fill in the circles that are activated
