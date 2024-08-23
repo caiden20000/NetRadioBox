@@ -197,7 +197,8 @@ class Player:
         pass
     
 
-
+# TODO: Is there a simpler / better / more understandable way to put this on a new thread?
+#       Do some ASYNC research.
 class Encoder:
     def __init__(self):
         self.button_short_callback = None
@@ -262,25 +263,46 @@ class Encoder:
 
 
 
-# TODO: Determine how we will store time (ms, seconds?)
+# Time stored as ms
+# TODO: Implement all methods
+MS_IN_DAY = 1000 * 60 * 60 * 24
 class Clock:
     def __init__(self):
-        pass
+        self.current_time = 0
+        self.alarm_time = 0
+        self.alarm_active = False
+        self.alarm_callback = None
 
     def set_time_to_system_time(self) -> None:
+        pass # TODO: Get time automatically via time module & timezone settings
+    def set_current_time(self, new_time: int) -> None:
+        self.current_time = new_time
+        # Keeps current_time in 24h bounds
+        if self.current_time < 0:
+            self.current_time += MS_IN_DAY
+        elif self.current_time >= MS_IN_DAY:
+            self.current_time %= MS_IN_DAY
+        
+    def scrub_current_time(self, change: int) -> None:
+        self.set_current_time(self.current_time + change)
+
+    def set_alarm_time(self, new_time: int) -> None:
         pass
-    def set_time(self, time: int) -> None:
-        pass
-    def scrub_time(self, distance: int) -> None:
-        pass
-    def set_alarm_time(self, time: int) -> None:
-        pass
-    def scrub_alarm_time(self, distance: int) -> None:
+    def scrub_alarm_time(self, change: int) -> None:
         pass
     def set_alarm_active(self, is_alarm_active: bool) -> None:
         pass
     def set_alarm_callback(self, callback: function) -> None:
         pass
+    
+    # Gives time in HH:MM
+    def get_current_time_string(self):
+        pass
+    def get_alarm_time_string(self):
+        pass
+    def get_alarm_active(self):
+        pass
+
 
 
 # TODO: Public methods
