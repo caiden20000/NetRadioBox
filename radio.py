@@ -335,3 +335,7 @@ class Radio:
 # TODO: Wrap in a try/finally to clean the display before execution stops
 
 
+ui = UserInterface()
+ui.set_track_name("Brother Brady and the Wiggly Witches")
+ui.set_station_number(35)
+ui.set_time("13:45")
