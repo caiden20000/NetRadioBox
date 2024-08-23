@@ -200,16 +200,65 @@ class Player:
 
 class Encoder:
     def __init__(self):
-        pass
+        self.button_short_callback = None
+        self.button_long_callback = None
+        self.rotate_left_callback = None
+        self.rotate_right_callback = None
+
+        self.button = False
+        self.button_start_time = 0
+        self.button_timer = None
+        
+        self.rotary_device = evdev.InputDevice(rotary_device)
+        self.rotary_button_device = evdev.InputDevice(rotary_button_device)
+    
+    async def start(self) -> None:
+        await asyncio.gather(
+            self.handle_rotation(self.rotary_device),
+            self.handle_button(self.rotary_button_device)
+        )
+
+    async def handle_rotation(self, device) -> None:
+        async for event in device.async_read_loop():
+            if event.type != 2: # 2 is REL_X type event
+                continue
+            if event.value == 1:
+                self.rotate_left_callback()
+            if event.value == -1:
+                self.rotate_right_callback()
+
+    def _check_button_long(self) -> None:
+        if self.button and time_now() - self.button_start_time >= BUTTON_LONG_PRESS_DURATION_MS:
+            self.button_start_time = 0
+            self.button_long_callback()
+            
+    async def handle_button(self, device) -> None:
+        async for event in device.async_read_loop():
+            if event.code != ROTARY_BUTTON_KEYCODE:
+                continue
+            if event.value == 1:
+                self.button = True
+                self.button_start_time = time_now()
+                self.button_timer = threading.Timer(BUTTON_LONG_PRESS_DURATION_MS/1000, self._check_button_long)
+                self.button_timer.start()
+            else:
+                if self.button == True:
+                    # Button has just been depressed
+                    # Timer will catch long presses, we only detect short here.
+                    self.button_timer.cancel()
+                    if time_now() - self.button_start_time < BUTTON_LONG_PRESS_DURATION_MS:
+                        self.button_short_callback()
+                self.button = False
+                self.button_start_time = 0
 
     def set_rotate_left_callback(self, callback: function) -> None:
-        pass
+        self.set_rotate_left_callback = callback
     def set_rotate_right_callback(self, callback: function) -> None:
-        pass
+        self.set_rotate_right_callback = callback
     def set_button_short_callback(self, callback: function) -> None:
-        pass
+        self.button_short_callback = callback
     def set_button_long_callback(self, callback: function) -> None:
-        pass
+        self.set_button_long_callback = callback
 
 
 
@@ -249,4 +298,10 @@ class Radio:
         pass
 
     
+# TODO: Make global Radio instance
+# TODO: Make global Encoder instance with access to Radio instance for callbacks
 
+# TODO: Run Encoder instance in another thread
+# TODO: Run Radio main loop in original thread
+
+# TODO: Wrap in a try/finally to clean the display before execution stops
