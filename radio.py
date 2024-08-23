@@ -60,6 +60,12 @@ OLED_HEIGHT  = 64
 # Default font location
 FONT_RESOURCE = os.path.join(assetdir, 'noto_mono.ttf')
 
+# Devices
+ROTARY_ENCODER_DEVICE = '/dev/input/event3'
+ROTARY_ENCODER_BUTTON_DEVICE = '/dev/input/event0'
+BUTTON_LONG_PRESS_DURATION_MS = 800
+ROTARY_BUTTON_KEYCODE = 28
+
 
 ##########
 ### Utility functions
@@ -210,8 +216,8 @@ class Encoder:
         self.button_start_time = 0
         self.button_timer = None
         
-        self.rotary_device = evdev.InputDevice(rotary_device)
-        self.rotary_button_device = evdev.InputDevice(rotary_button_device)
+        self.rotary_device = evdev.InputDevice(ROTARY_ENCODER_DEVICE)
+        self.rotary_button_device = evdev.InputDevice(ROTARY_ENCODER_BUTTON_DEVICE)
     
     async def start(self) -> None:
         await asyncio.gather(
@@ -327,3 +333,5 @@ class Radio:
 # TODO: Run Radio main loop in original thread
 
 # TODO: Wrap in a try/finally to clean the display before execution stops
+
+
