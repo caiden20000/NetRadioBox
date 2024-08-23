@@ -49,35 +49,101 @@ from PIL import Image,ImageDraw,ImageFont
 from enum import Enum
 
 
+##########
+### Constants
+##########
+
+# Dimensions of 1.5 inch transparent OLED screen
+OLED_WIDTH   = 128
+OLED_HEIGHT  = 64
+
+# Default font location
+FONT_RESOURCE = os.path.join(assetdir, 'noto_mono.ttf')
+
+
+##########
+### Utility functions
+##########
+
+# Gets the current time in ms
+# MS is the default representation of all integer times in this program.
+def time_now() -> int:
+    return time.time_ns() // 1_000_000
+
+
+##########
+### Classes
+##########
+
 class Mode(Enum):
     STATION = 1
     TIME = 2
     ALARM = 3
     MODE = 4
 
+
 # Call set functions to update the UI.
 # The UI does not modify external state.
 class UserInterface:
     def __init__(self):
-        pass
+        self.track_name = ""
+        self.time = ""
+        self.station_number = ""
+        self.selected_mode = Mode.STATION
+        self.alarm_active = False
+        self.station_active = False
+
+        self.track_start_time = 0
+
+        self.display = OLED_1in51.OLED_1in51()
+        self.display.Init()
+        self.display.clear()
+
+    def _get_scrolling_track_name(self, max_chars: int, scroll_speed: int = 300, ends_hold_multiple: int = 3):
+        overflow_size = len(self.track_name) - max_chars
+        # If length of text fits within bounds, we don't need to do anything
+        if overflow_size <= 0:
+            return self.track_name
+
+        cycle_length = (scroll_speed * ends_hold_multiple * 2) + (overflow_size * scroll_speed)
+        cycle_position = (time_now() - self.track_start_time) % cycle_length
+        cycle_discrete = ends_hold_multiple*2 + overflow_size
+        cycle_index = math.floor((cycle_position / cycle_length) * cycle_discrete)
+        char_index = min(max(cycle_index - ends_hold_multiple, 0), overflow_size)
+
+        truncated_track_name = self.track_name[char_index:char_index+max_chars]
+        return truncated_track_name
     
     def set_track_name(self, new_track_name: str) -> None:
-        pass
+        if new_track_name == self.track_name:
+            return
+        self.track_name = new_track_name
+        self.track_start_time = time_now()
+        self.draw_ui()
 
     def set_time(self, new_time: str) -> None:
-        pass
+        self.time = new_time
+        self.draw_ui()
 
     def set_station_number(self, new_station_number: int) -> None:
-        pass
+        padded_number = str(new_station_number).zfill(3)
+        self.station_number = padded_number
+        self.draw_ui()
 
     def set_selected_mode(self, new_mode: Mode) -> None:
-        pass
+        self.selected_mode = new_mode
+        self.draw_ui()
 
     def set_alarm_active(self, is_alarm_active: bool) -> None:
-        pass
+        self.alarm_active = is_alarm_active
+        self.draw_ui()
 
     def set_station_active(self, is_station_active: bool) -> None:
-        pass
+        self.station_active = is_station_active
+        self.draw_ui()
+
+    def clear(self):
+        self.display.clear()
 
     def draw_ui(self):
         pass
