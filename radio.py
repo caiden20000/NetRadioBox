@@ -165,7 +165,7 @@ class UserInterface:
         draw.line([(27, 42), (27, 58)], None, 1)
         # Draw track name
         scrolled_track_name = self._get_scrolling_track_name(13, 300)
-        draw.text((31, 45), self.station_number, font = station_font, fill = 0)
+        draw.text((31, 45), self.scrolled_track_name, font = station_font, fill = 0)
         # Draw modes
         # TODO: Draw the mode circles
         # TODO: Fill in the circles that are activated
@@ -339,5 +339,7 @@ ui = UserInterface()
 ui.set_track_name("Brother Brady and the Wiggly Witches")
 ui.set_station_number(35)
 ui.set_time("13:45")
-time.sleep(5)
+for i in range(5/0.3):
+    time.sleep(0.3)
+    ui.draw_ui()
 ui.clear()
