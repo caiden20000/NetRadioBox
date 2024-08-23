@@ -1,0 +1,4 @@
+asyncio==3.4.3
+evdev==1.7.1
+pillow==10.4.0
+python-vlc==3.0.20123
