@@ -146,7 +146,29 @@ class UserInterface:
         self.display.clear()
 
     def draw_ui(self):
-        pass
+        image = Image.new('1', (OLED_WIDTH, OLED_HEIGHT), "WHITE")
+        draw = ImageDraw.Draw(image)
+        time_font = ImageFont.truetype(FONT_RESOURCE, 35)
+        station_font = ImageFont.truetype(FONT_RESOURCE, 10)
+
+        # Draw time
+        draw.text(self.time, (5, 0), font = time_font, fill = 0)
+        # Draw station number
+        draw.text(self.station_number, (5, 45), font = station_font, fill = 0)
+        # Draw separator
+        draw.line([(27, 42), (27, 58)], None, 1)
+        # Draw track name
+        scrolled_track_name = self._get_scrolling_track_name(13, 300)
+        draw.text(self.station_number, (31, 45), font = station_font, fill = 0)
+        # Draw modes
+        # TODO: Draw the mode circles
+        # TODO: Fill in the circles that are activated
+        # Draw mode selection box
+        # TODO: Draw the mode selection box around correct circle
+
+        # Render drawings onto screen
+        image = image.rotate(180)
+        self.display.ShowImage(self.display.getbuffer(image))
 
 
 class Player:
