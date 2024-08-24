@@ -169,9 +169,12 @@ class UserInterface:
         # Draw modes
         # TODO: Draw the mode circles
         # TODO: Fill in the circles that are activated
+        draw.ellipse([(120, 10), (126, 16)], "WHITE", 0, 1)
+        draw.ellipse([(120, 25), (126, 31)], "WHITE", 0, 6) # filled with outline=6
+        draw.ellipse([(120, 40), (126, 46)], "WHITE", 0, 1)
         # Draw mode selection box
         # TODO: Draw the mode selection box around correct circle
-
+        draw.line([(115, 12), (115, 14)], None, 3)
         # Render drawings onto screen
         image = image.rotate(180)
         self.display.ShowImage(self.display.getbuffer(image))
@@ -339,7 +342,7 @@ ui = UserInterface()
 ui.set_track_name("Brother Brady and the Wiggly Witches")
 ui.set_station_number(35)
 ui.set_time("13:45")
-for i in range(5/0.3):
+for i in range(math.floor(5//0.3)):
     time.sleep(0.3)
     ui.draw_ui()
 ui.clear()
