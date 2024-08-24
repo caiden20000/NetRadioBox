@@ -126,32 +126,32 @@ class UserInterface:
             return
         self.track_name = new_track_name
         self.track_start_time = time_now()
-        self.draw_ui()
+        # self.draw_ui()
 
     def set_time(self, new_time: str) -> None:
         self.time = new_time
-        self.draw_ui()
+        # self.draw_ui()
 
     def set_station_number(self, new_station_number: int) -> None:
         padded_number = str(new_station_number).zfill(3)
         self.station_number = padded_number
-        self.draw_ui()
+        # self.draw_ui()
 
     def set_selected_mode(self, new_mode: Mode) -> None:
         self.selected_mode = new_mode
-        self.draw_ui()
+        # self.draw_ui()
 
     def set_alarm_active(self, is_alarm_active: bool) -> None:
         self.alarm_active = is_alarm_active
-        self.draw_ui()
+        # self.draw_ui()
 
     def set_station_active(self, is_station_active: bool) -> None:
         self.station_active = is_station_active
-        self.draw_ui()
+        # self.draw_ui()
     
     def set_highlight_selector(self, highlight: bool) -> None:
         self.highlight_selector = highlight
-        self.draw_ui()
+        # self.draw_ui()
 
     def clear(self):
         self.display.clear()
@@ -319,19 +319,73 @@ class Clock:
 
 
 
-# TODO: Public methods
+# TODO: Show ALARM time only and always when ALARM is highlighted
 class Radio:
     def __init__(self):
-        pass
+        self.mode = Mode.STATION
+        self.highlighted_mode = Mode.STATION
+        self.station_active = False
+        self.alarm_active = False
+
+        self.ui = UserInterface()
+        self.clock = Clock()
+        self.player = Player()
+
 
     def control_left(self):
-        pass
+        if self.mode == Mode.MODE:
+            if self.highlighted_mode == Mode.STATION: self.highlighted_mode = Mode.ALARM
+            if self.highlighted_mode == Mode.TIME:    self.highlighted_mode = Mode.STATION
+            if self.highlighted_mode == Mode.ALARM:   self.highlighted_mode = Mode.TIME
+            self.ui.set_selected_mode(self.highlighted_mode)
+        if self.mode == Mode.STATION:
+            self.player.scrub_station(-1)
+            self.ui.set_station_number(self.player.get_station_number())
+        if self.mode == Mode.TIME:
+            self.clock.scrub_current_time(-1)
+            self.ui.set_time(self.clock.get_current_time_string())
+        if self.mode == Mode.ALARM:
+            self.clock.scrub_alarm_time(-1)
+            self.ui.set_time(self.clock.get_alarm_time_string())
+        if self.highlighted_mode == Mode.ALARM: self.ui.set_time(self.clock.get_alarm_time_string())
+        else: self.ui.set_time(self.clock.get_current_time_string())
+        self.ui.draw_ui()
     def control_right(self):
-        pass
+        if self.mode == Mode.MODE:
+            if self.highlighted_mode == Mode.STATION: self.highlighted_mode = Mode.TIME
+            if self.highlighted_mode == Mode.TIME:    self.highlighted_mode = Mode.ALARM
+            if self.highlighted_mode == Mode.ALARM:   self.highlighted_mode = Mode.STATION
+            self.ui.set_selected_mode(self.highlighted_mode)
+        if self.mode == Mode.STATION:
+            self.player.scrub_station(1)
+            self.ui.set_station_number(self.player.get_station_number())
+        if self.mode == Mode.TIME:
+            self.clock.scrub_current_time(1)
+            self.ui.set_time(self.clock.get_current_time_string())
+        if self.mode == Mode.ALARM:
+            self.clock.scrub_alarm_time(1)
+            self.ui.set_time(self.clock.get_alarm_time_string())
+        if self.highlighted_mode == Mode.ALARM: self.ui.set_time(self.clock.get_alarm_time_string())
+        else: self.ui.set_time(self.clock.get_current_time_string())
+        self.ui.draw_ui()
     def control_short_click(self):
-        pass
+        if self.mode == Mode.MODE:
+            self.mode = self.highlighted_mode
+            self.ui.set_highlight_selector(False)
+        else:
+            self.highlighted_mode = self.mode
+            self.mode = Mode.MODE
+            self.ui.set_highlight_selector(True)
+        self.ui.draw_ui()
+
     def control_long_click(self):
-        pass
+        if self.highlighted_mode == Mode.STATION:
+            self.station_active != self.station_active
+        if self.highlighted_mode == Mode.ALARM:
+            self.alarm_active != self.alarm_active
+        if self.highlighted_mode == Mode.TIME:
+            self.clock.set_time_to_system_time()
+        self.ui.draw_ui()
 
     
 # TODO: Make global Radio instance
