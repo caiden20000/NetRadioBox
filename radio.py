@@ -96,6 +96,7 @@ class UserInterface:
         self.time = ""
         self.station_number = ""
         self.selected_mode = Mode.STATION
+        self.highlight_selector = False
         self.alarm_active = False
         self.station_active = False
 
@@ -147,6 +148,10 @@ class UserInterface:
     def set_station_active(self, is_station_active: bool) -> None:
         self.station_active = is_station_active
         self.draw_ui()
+    
+    def set_highlight_selector(self, highlight: bool) -> None:
+        self.highlight_selector = highlight
+        self.draw_ui()
 
     def clear(self):
         self.display.clear()
@@ -167,14 +172,14 @@ class UserInterface:
         scrolled_track_name = self._get_scrolling_track_name(13, 300)
         draw.text((31, 45), scrolled_track_name, font = station_font, fill = 0)
         # Draw modes
-        # TODO: Draw the mode circles
-        # TODO: Fill in the circles that are activated
-        draw.ellipse([(120, 10), (126, 16)], "WHITE", 0, 1)
-        draw.ellipse([(120, 25), (126, 31)], "WHITE", 0, 6) # filled with outline=6
-        draw.ellipse([(120, 40), (126, 46)], "WHITE", 0, 1)
+        draw.ellipse([(120, 10), (126, 16)], "WHITE", 0, 6 if self.station_active else 1) # Statio Mode
+        draw.ellipse([(120, 25), (126, 31)], "WHITE", 0, 1) # Time Mode
+        draw.ellipse([(120, 40), (126, 46)], "WHITE", 0, 6 if self.alarm_active else 1) # Alarm Mode
         # Draw mode selection box
         # TODO: Draw the mode selection box around correct circle
-        draw.line([(115, 12), (115, 14)], None, 3)
+        if self.selected_mode == Mode.STATION: draw.line([(115, 12), (115, 14)], None, 3 if self.highlight_selector else 1)
+        if self.selected_mode == Mode.TIME:    draw.line([(115, 27), (115, 29)], None, 3 if self.highlight_selector else 1)
+        if self.selected_mode == Mode.ALARM:   draw.line([(115, 42), (115, 44)], None, 3 if self.highlight_selector else 1)
         # Render drawings onto screen
         image = image.rotate(180)
         self.display.ShowImage(self.display.getbuffer(image))
