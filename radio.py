@@ -305,9 +305,10 @@ class Encoder:
 
 
 
-# Time stored as ms
+# Time stored as SECONDS
 # TODO: Implement all methods
 MS_IN_DAY = 1000 * 60 * 60 * 24
+SECONDS_IN_DAY = 60 * 60 * 24
 class Clock:
     def __init__(self):
         self.current_time = 0
@@ -316,30 +317,34 @@ class Clock:
         self.alarm_callback = None
 
     def set_time_to_system_time(self) -> None:
-        pass # TODO: Get time automatically via time module & timezone settings
-    def set_current_time(self, new_time: int) -> None:
-        self.current_time = new_time
+        ms = time_now()
+        seconds = ms / 1000
+        localtime = time.localtime()
+        # TODO: Get time automatically via time module & timezone settings
+    def set_current_time(self, new_time_seconds: int) -> None:
+        self.current_time = new_time_seconds
         # Keeps current_time in 24h bounds
         if self.current_time < 0:
-            self.current_time += MS_IN_DAY
-        elif self.current_time >= MS_IN_DAY:
-            self.current_time %= MS_IN_DAY
+            self.current_time += SECONDS_IN_DAY
+        elif self.current_time >= SECONDS_IN_DAY:
+            self.current_time %= SECONDS_IN_DAY
         
-    def scrub_current_time(self, change: int) -> None:
-        self.set_current_time(self.current_time + change)
+    def scrub_current_time(self, change_seconds: int) -> None:
+        self.set_current_time(self.current_time + change_seconds)
 
-    def set_alarm_time(self, new_time: int) -> None:
-        pass
-    def scrub_alarm_time(self, change: int) -> None:
-        pass
+    def set_alarm_time(self, new_time_seconds: int) -> None:
+        pass # TODO
+    def scrub_alarm_time(self, change_seconds: int) -> None:
+        pass # TODO
     def set_alarm_active(self, is_alarm_active: bool) -> None:
-        pass
+        pass # TODO
     def set_alarm_callback(self, callback: function) -> None:
-        pass
+        pass # TODO
     
     # Gives time in HH:MM
     def get_current_time_string(self):
         pass
+        # time.strftime("%H:%M", time.localtime())
     def get_alarm_time_string(self):
         pass
     def get_alarm_active(self):
