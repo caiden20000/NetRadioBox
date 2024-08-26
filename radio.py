@@ -359,7 +359,10 @@ class Radio:
         self.clock = Clock()
         self.player = Player()
 
-
+    # In MODE mode, scrubs highlighted mode left & update UI
+    # In STATION mode, scrubs station number left & update UI
+    # In TIME mode, scrubs current clock time left & update UI
+    # In ALARM mode, scrubs alarm clock time left & update UI
     def control_left(self):
         if self.mode == Mode.MODE:
             if self.highlighted_mode == Mode.STATION: self.highlighted_mode = Mode.ALARM
@@ -378,6 +381,11 @@ class Radio:
         if self.highlighted_mode == Mode.ALARM: self.ui.set_time(self.clock.get_alarm_time_string())
         else: self.ui.set_time(self.clock.get_current_time_string())
         self.ui.draw_ui()
+    
+    # In MODE mode, scrubs highlighted mode right & update UI
+    # In STATION mode, scrubs station number right & update UI
+    # In TIME mode, scrubs current clock time right & update UI
+    # In ALARM mode, scrubs alarm clock time right & update UI
     def control_right(self):
         if self.mode == Mode.MODE:
             if self.highlighted_mode == Mode.STATION: self.highlighted_mode = Mode.TIME
@@ -396,6 +404,9 @@ class Radio:
         if self.highlighted_mode == Mode.ALARM: self.ui.set_time(self.clock.get_alarm_time_string())
         else: self.ui.set_time(self.clock.get_current_time_string())
         self.ui.draw_ui()
+    
+    # In MODE mode, makes highlighted mode the active mode & update the UI
+    # In ANY OTHER mode, makes current mode the highlighted mode, makes MODE mode the active mode, & update the UI
     def control_short_click(self):
         if self.mode == Mode.MODE:
             self.mode = self.highlighted_mode
@@ -406,14 +417,29 @@ class Radio:
             self.ui.set_highlight_selector(True)
         self.ui.draw_ui()
 
+    # In MODE mode, does what the highlighted mode would do
+    # In STATION mode, toggle the player on/off & update the UI
+    # In ALARM mode, toggle the alarm on/off & update the UI
+    # In TIME mode, resets the time to system time & update the UI
     def control_long_click(self):
         if self.highlighted_mode == Mode.STATION:
             self.station_active != self.station_active
+            self._toggle_player(self.station_active)
+            self.ui.station_active = self.station_active
         if self.highlighted_mode == Mode.ALARM:
             self.alarm_active != self.alarm_active
+            self._toggle_alarm(self.alarm_active)
+            self.ui.alarm_active = self.alarm_active
         if self.highlighted_mode == Mode.TIME:
             self.clock.set_time_to_system_time()
+            self.ui.set_time(self.clock.get_current_time_string())
         self.ui.draw_ui()
+
+    def _toggle_player(self, enabled: bool) -> None:
+        if enabled: self.player.play()
+        else: self.player.stop()
+    def _toggle_alarm(self, enabled: bool) -> None:
+        pass # TODO
 
     
 # TODO: Make global Radio instance
