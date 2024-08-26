@@ -186,29 +186,57 @@ class UserInterface:
 
 
 class Player:
-    def __init__(self):
-        pass
+    def __init__(self, station_list: list[str] = []):
+        self.station_list = station_list
+        self.current_station_number = 0
+        self.is_playing = False
+        # VLC related attributes
+        self.instance = vlc.Instance()
+        self.player = self.instance.media_player_new()
+        self.media = None
+
+    def _init_media(self, url: str) -> None:
+        self.media = self.instance.media_new(url)
+        self.player.set_media(self.media)
+
+    def _get_meta(self, e_meta: vlc.Meta) -> str:
+        if self.media is None or self.media.get_meta(e_meta) is None:
+            return 'unknown'
+        else:
+            return self.media.get_meta(e_meta)
+
+    def set_station_list(self, station_list: list[str]) -> None:
+        self.station_list = station_list
     
-    def play(self) -> bool:
-        pass
+    def play(self) -> None:
+        self.player.play()
+        self.is_playing = True
 
-    def stop(self) -> bool:
-        pass
+    def stop(self) -> None:
+        self.player.stop()
+        self.media = None
+        self.is_playing = False
 
-    def set_station(self, new_station: int) -> bool:
-        pass
+    def set_station(self, new_station_number: int) -> bool:
+        if new_station_number < 0 or new_station_number >= len(self.station_list):
+            return False
+        self.current_station_number = new_station_number
+        self._init_media(self.station_list[new_station_number])
+        if self.is_playing: self.play()
+        return True
 
     def scrub_station(self, distance: int) -> None:
-        pass
+        wrapped_station_number = (self.current_station_number + distance) % len(self.station_list)
+        self.set_station(wrapped_station_number)
 
     def get_station_number(self) -> int:
-        pass
+        return self.current_station_number
     def get_station_title(self) -> str:
-        pass
+        return self._get_meta(vlc.Meta.Title)
     def get_station_track(self) -> str:
-        pass
+        return self._get_meta(vlc.Meta.NowPlaying)
     def get_station_count(self) -> int:
-        pass
+        return len(self.station_list)
     
 
 # TODO: Is there a simpler / better / more understandable way to put this on a new thread?
