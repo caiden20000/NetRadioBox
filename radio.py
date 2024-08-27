@@ -322,36 +322,43 @@ class Clock:
         self.alarm_thread = None
 
     def _active_alarm(self):
+        if self.alarm_active is False:
+            return
         self.alarm_callback()
         self._init_alarm()
     
     def _init_alarm(self):
-        self.alarm_thread.cancel()
+        if self.alarm_thread is not None:
+            self.alarm_thread.cancel()
         seconds_until_alarm = 0 # TODO
         self.alarm_thread = threading.Timer(seconds_until_alarm, self._active_alarm)
+        self.alarm_thread.start()
 
     def set_time_to_system_time(self) -> None:
-        ms = time_now()
-        seconds = ms / 1000
-        localtime = time.localtime()
-        # TODO: Get time automatically via time module & timezone settings
-    def set_current_time(self, new_time_seconds: int) -> None:
-        self.current_time_offset = new_time_seconds
-        # Keeps current_time in 24h bounds
-        if self.current_time_offset < 0:
-            self.current_time_offset += SECONDS_IN_DAY
-        elif self.current_time_offset >= SECONDS_IN_DAY:
-            self.current_time_offset %= SECONDS_IN_DAY
+        self.current_time_offset = 0
+    def set_current_time_offset(self, new_time_seconds: int) -> None:
+        pass # TODO
+        # self.current_time_offset = new_time_seconds
+        # # Keeps current_time in 24h bounds
+        # if self.current_time_offset < 0:
+        #     self.current_time_offset += SECONDS_IN_DAY
+        # elif self.current_time_offset >= SECONDS_IN_DAY:
+        #     self.current_time_offset %= SECONDS_IN_DAY
         
-    def scrub_current_time(self, change_seconds: int) -> None:
-        self.set_current_time(self.current_time_offset + change_seconds)
+    def scrub_current_time_offset(self, change_seconds: int) -> None:
+        self.set_current_time_offset(self.current_time_offset + change_seconds)
 
     def set_alarm_time(self, new_time_seconds: int) -> None:
-        pass # TODO
+        self.alarm_time = new_time_seconds % SECONDS_IN_DAY
     def scrub_alarm_time(self, change_seconds: int) -> None:
-        pass # TODO
+        self.set_alarm_time((self.alarm_time + change_seconds) % SECONDS_IN_DAY)
     def set_alarm_active(self, is_alarm_active: bool) -> None:
-        pass # TODO
+        self.alarm_active = is_alarm_active
+        if self.alarm_active is False and self.alarm_thread is not None:
+            self.alarm_thread.cancel()
+            self.alarm_thread = None
+        if self.alarm_active is True:
+            self._init_alarm()
     def set_alarm_callback(self, callback: function) -> None:
         pass # TODO
     
@@ -402,7 +409,7 @@ class Radio:
             self.player.scrub_station(-1)
             self.ui.set_station_number(self.player.get_station_number())
         if self.mode == Mode.TIME:
-            self.clock.scrub_current_time(-1)
+            self.clock.scrub_current_time_offset(-1)
             self.ui.set_time(self.clock.get_current_time_string())
         if self.mode == Mode.ALARM:
             self.clock.scrub_alarm_time(-1)
@@ -425,7 +432,7 @@ class Radio:
             self.player.scrub_station(1)
             self.ui.set_station_number(self.player.get_station_number())
         if self.mode == Mode.TIME:
-            self.clock.scrub_current_time(1)
+            self.clock.scrub_current_time_offset(1)
             self.ui.set_time(self.clock.get_current_time_string())
         if self.mode == Mode.ALARM:
             self.clock.scrub_alarm_time(1)
@@ -452,23 +459,23 @@ class Radio:
     # In TIME mode, resets the time to system time & update the UI
     def control_long_click(self):
         if self.highlighted_mode == Mode.STATION:
-            self.station_active != self.station_active
-            self._toggle_player(self.station_active)
-            self.ui.station_active = self.station_active
+            self._toggle_player()
         if self.highlighted_mode == Mode.ALARM:
-            self.alarm_active != self.alarm_active
-            self._toggle_alarm(self.alarm_active)
-            self.ui.alarm_active = self.alarm_active
+            self._toggle_alarm()
         if self.highlighted_mode == Mode.TIME:
             self.clock.set_time_to_system_time()
             self.ui.set_time(self.clock.get_current_time_string())
         self.ui.draw_ui()
 
-    def _toggle_player(self, enabled: bool) -> None:
-        if enabled: self.player.play()
+    def _toggle_player(self) -> None:
+        self.station_active != self.station_active
+        self.ui.station_active = self.station_active
+        if self.station_active: self.player.play()
         else: self.player.stop()
-    def _toggle_alarm(self, enabled: bool) -> None:
-        pass # TODO
+    def _toggle_alarm(self) -> None:
+        self.alarm_active != self.alarm_active
+        self.ui.alarm_active = self.alarm_active
+        self.clock.set_alarm_active(self.alarm_active)
 
     
 # TODO: Make global Radio instance
