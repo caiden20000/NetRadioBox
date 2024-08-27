@@ -306,15 +306,29 @@ class Encoder:
 
 
 # Time stored as SECONDS
+# Since we always have ms since epoch, "setting the time" should be as an offset to that.
+# Alarm is stored as minutes from 0000 (midnight) 
 # TODO: Implement all methods
 MS_IN_DAY = 1000 * 60 * 60 * 24
 SECONDS_IN_DAY = 60 * 60 * 24
 class Clock:
     def __init__(self):
-        self.current_time = 0
+        # Offset from UTC (in seconds)
+        self.current_time_offset = 0
+        # Time in seconds of alarm time. 0 < alarm_time < SECONDS_IN_DAY
         self.alarm_time = 0
         self.alarm_active = False
         self.alarm_callback = None
+        self.alarm_thread = None
+
+    def _active_alarm(self):
+        self.alarm_callback()
+        self._init_alarm()
+    
+    def _init_alarm(self):
+        self.alarm_thread.cancel()
+        seconds_until_alarm = 0 # TODO
+        self.alarm_thread = threading.Timer(seconds_until_alarm, self._active_alarm)
 
     def set_time_to_system_time(self) -> None:
         ms = time_now()
@@ -322,15 +336,15 @@ class Clock:
         localtime = time.localtime()
         # TODO: Get time automatically via time module & timezone settings
     def set_current_time(self, new_time_seconds: int) -> None:
-        self.current_time = new_time_seconds
+        self.current_time_offset = new_time_seconds
         # Keeps current_time in 24h bounds
-        if self.current_time < 0:
-            self.current_time += SECONDS_IN_DAY
-        elif self.current_time >= SECONDS_IN_DAY:
-            self.current_time %= SECONDS_IN_DAY
+        if self.current_time_offset < 0:
+            self.current_time_offset += SECONDS_IN_DAY
+        elif self.current_time_offset >= SECONDS_IN_DAY:
+            self.current_time_offset %= SECONDS_IN_DAY
         
     def scrub_current_time(self, change_seconds: int) -> None:
-        self.set_current_time(self.current_time + change_seconds)
+        self.set_current_time(self.current_time_offset + change_seconds)
 
     def set_alarm_time(self, new_time_seconds: int) -> None:
         pass # TODO
@@ -353,6 +367,8 @@ class Clock:
 
 
 # TODO: Show ALARM time only and always when ALARM is highlighted
+# TODO: Create alarm system (How does it happen?)
+# TODO: Alarm just activates station on
 class Radio:
     def __init__(self):
         self.mode = Mode.STATION
@@ -363,6 +379,14 @@ class Radio:
         self.ui = UserInterface()
         self.clock = Clock()
         self.player = Player()
+
+        self.clock.set_alarm_callback(self.alarm_active)
+    
+    def alarm_active(self):
+        self.station_active = True
+        self.player.play()
+        self.ui.set_station_active(True)
+        self.ui.draw_ui()
 
     # In MODE mode, scrubs highlighted mode left & update UI
     # In STATION mode, scrubs station number left & update UI
