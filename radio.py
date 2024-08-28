@@ -108,7 +108,7 @@ class UserInterface:
 
         self.last_state = ""
 
-    def _get_scrolling_track_name(self, max_chars: int, scroll_speed: int = 300, ends_hold_multiple: int = 3):
+    def _get_scrolling_track_name(self, max_chars: int = 13, scroll_speed: int = 300, ends_hold_multiple: int = 3):
         overflow_size = len(self.track_name) - max_chars
         # If length of text fits within bounds, we don't need to do anything
         if overflow_size <= 0:
@@ -159,7 +159,9 @@ class UserInterface:
         self.display.clear()
 
     def _get_state(self):
+        # TODO: Add scroll position of track to state
         return  str(self.track_name) + \
+                str(self._get_scrolling_track_name()) + \
                 str(self.time) + \
                 str(self.station_number) + \
                 str(self.selected_mode) + \
@@ -185,7 +187,7 @@ class UserInterface:
         # Draw separator
         draw.line([(27, 42), (27, 58)], None, 1)
         # Draw track name
-        scrolled_track_name = self._get_scrolling_track_name(13, 300)
+        scrolled_track_name = self._get_scrolling_track_name()
         draw.text((31, 45), scrolled_track_name, font = station_font, fill = 0)
         # Draw modes
         draw.ellipse([(120, 10), (126, 16)], "WHITE", 0, 6 if self.station_active else 1) # Statio Mode
@@ -514,6 +516,14 @@ class Radio:
         if self.mode == Mode.ALARM:
             self.ui.set_time(self.clock.get_alarm_time_string())
         self.ui.draw_ui()
+    
+    def _sync_ui(self) -> None:
+        self.ui.set_track_name(self.track_name)
+        self.ui.set_time(self.clock.get_current_time_string())
+        self.ui.set_station_number(self.player.get_station_number())
+        self.ui.set_selected_mode(self.mode)
+        self.ui.set_alarm_active(self.alarm_active)
+        self.ui.set_station_active(self.station_active)
 
 
 
