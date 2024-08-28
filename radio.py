@@ -106,7 +106,10 @@ class UserInterface:
         self.display.Init()
         self.display.clear()
 
-        self.last_state = ""
+        self.update_required = True
+        self.scroll_speed = 300
+        self.max_chars = 13
+        self.update_schedule_thread = None
 
     def _get_scrolling_track_name(self, max_chars: int = 13, scroll_speed: int = 300, ends_hold_multiple: int = 3):
         overflow_size = len(self.track_name) - max_chars
@@ -124,56 +127,67 @@ class UserInterface:
         return truncated_track_name
     
     def set_track_name(self, new_track_name: str) -> None:
+        # TODO: make self.update_required = True when track name is scrolling
         if new_track_name == self.track_name:
             return
         self.track_name = new_track_name
         self.track_start_time = time_now()
-        # self.draw_ui()
+        self._update_schedule()
+
+    def _update_schedule(self):
+        self.update_required = True
+        if self.update_schedule_thread is not None:
+            self.update_schedule_thread.cancel()
+        if self.track_name > self.max_chars:
+            # We are scrolling, so we need to update the schedule thread
+            self.update_schedule_thread = threading.Timer(self.scroll_speed, self._update_schedule)
+        self.draw_ui()
 
     def set_time(self, new_time: str) -> None:
+        if self.time == new_time:
+            return
         self.time = new_time
-        # self.draw_ui()
+        self.update_required = True
 
     def set_station_number(self, new_station_number: int) -> None:
         padded_number = str(new_station_number).zfill(3)
+        if self.station_number == padded_number:
+            return
         self.station_number = padded_number
-        # self.draw_ui()
+        self.update_required = True
 
     def set_selected_mode(self, new_mode: Mode) -> None:
+        if self.selected_mode == new_mode:
+            return
         self.selected_mode = new_mode
-        # self.draw_ui()
+        self.update_required = True
 
     def set_alarm_active(self, is_alarm_active: bool) -> None:
+        if self.alarm_active == is_alarm_active:
+            return
         self.alarm_active = is_alarm_active
-        # self.draw_ui()
+        self.update_required = True
 
     def set_station_active(self, is_station_active: bool) -> None:
+        if self.station_active == is_station_active:
+            return
         self.station_active = is_station_active
-        # self.draw_ui()
+        self.update_required = True
     
     def set_highlight_selector(self, highlight: bool) -> None:
+        if self.highlight_selector == highlight:
+            return
         self.highlight_selector = highlight
-        # self.draw_ui()
+        self.update_required = True
 
     def clear(self):
         self.display.clear()
 
-    def _get_state(self):
-        # TODO: Add scroll position of track to state
-        return  str(self.track_name) + \
-                str(self._get_scrolling_track_name()) + \
-                str(self.time) + \
-                str(self.station_number) + \
-                str(self.selected_mode) + \
-                str(self.highlight_selector) + \
-                str(self.alarm_active) + \
-                str(self.station_active)
-
     def draw_ui(self):
         # Prevent redrawing identical content
-        if self._get_state() == self.last_state:
+        if self.update_required == False:
             return
-        self.last_state = self._get_state()
+        self.update_required = False
 
         image = Image.new('1', (OLED_WIDTH, OLED_HEIGHT), "WHITE")
         draw = ImageDraw.Draw(image)
@@ -425,7 +439,7 @@ class Radio:
     # In TIME mode, scrubs current clock time left & update UI
     # In ALARM mode, scrubs alarm clock time left & update UI
     def control_left(self):
-        # print("DEBUG: control_left")
+        print("DEBUG: control_left")
         if self.mode == Mode.MODE:
             if self.highlighted_mode == Mode.STATION: self.highlighted_mode = Mode.ALARM
             if self.highlighted_mode == Mode.TIME:    self.highlighted_mode = Mode.STATION
@@ -449,7 +463,7 @@ class Radio:
     # In TIME mode, scrubs current clock time right & update UI
     # In ALARM mode, scrubs alarm clock time right & update UI
     def control_right(self):
-        # print("DEBUG: control_right")
+        print("DEBUG: control_right")
         if self.mode == Mode.MODE:
             if self.highlighted_mode == Mode.STATION: self.highlighted_mode = Mode.TIME
             if self.highlighted_mode == Mode.TIME:    self.highlighted_mode = Mode.ALARM
@@ -471,7 +485,7 @@ class Radio:
     # In MODE mode, makes highlighted mode the active mode & update the UI
     # In ANY OTHER mode, makes current mode the highlighted mode, makes MODE mode the active mode, & update the UI
     def control_short_click(self):
-        # print("DEBUG: control_short_click")
+        print("DEBUG: control_short_click")
         if self.mode == Mode.MODE:
             self.mode = self.highlighted_mode
             self.ui.set_highlight_selector(False)
@@ -486,7 +500,7 @@ class Radio:
     # In ALARM mode, toggle the alarm on/off & update the UI
     # In TIME mode, resets the time to system time & update the UI
     def control_long_click(self):
-        # print("DEBUG: control_long_click")
+        print("DEBUG: control_long_click")
         if self.highlighted_mode == Mode.STATION:
             self._toggle_player()
         if self.highlighted_mode == Mode.ALARM:
