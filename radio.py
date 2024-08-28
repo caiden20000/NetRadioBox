@@ -265,11 +265,12 @@ class Encoder:
         #     self.handle_rotation(self.rotary_device),
         #     self.handle_button(self.rotary_button_device)
         # )
-
+    #TODO: read_loop is blocking.
+    #TODO: Make each handle_x run in its own thread
     def handle_rotation(self, device: evdev.InputDevice) -> None:
         print("Test 1.0")
         for event in device.read_loop():
-            print("Test1.1") #TODO: read_loop is blocking.
+            print("Test1.1") 
             if event.type != 2: # 2 is REL_X type event, the rotation of the encoder
                 continue
             if event.value == 1:
@@ -531,7 +532,7 @@ encoder_thread = threading.Thread(target=encoder.start)
 encoder_thread.daemon = True
 encoder_thread.start()
 
-url_list_file = 'stations.list'
+url_list_file = 'station.list'
 with open(url_list_file, 'r') as file:
     url_list = [line.strip() for line in file]
 print(url_list)
