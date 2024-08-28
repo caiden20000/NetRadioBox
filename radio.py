@@ -322,54 +322,51 @@ class Clock:
         self.alarm_thread = None
 
     def _active_alarm(self):
-        if self.alarm_active is False:
-            return
-        self.alarm_callback()
-        self._init_alarm()
+        # if self.alarm_active is False:
+        #     return
+        # self.alarm_callback()
+        # self._init_alarm()
+        pass
     
     def _init_alarm(self):
-        if self.alarm_thread is not None:
-            self.alarm_thread.cancel()
-        seconds_until_alarm = 0 # TODO
-        self.alarm_thread = threading.Timer(seconds_until_alarm, self._active_alarm)
-        self.alarm_thread.start()
+        # if self.alarm_thread is not None:
+        #     self.alarm_thread.cancel()
+        # seconds_until_alarm = 0 # TODO
+        # self.alarm_thread = threading.Timer(seconds_until_alarm, self._active_alarm)
+        # self.alarm_thread.start()
+        pass
 
     def set_time_to_system_time(self) -> None:
         self.current_time_offset = 0
     def set_current_time_offset(self, new_time_seconds: int) -> None:
         pass # TODO
-        # self.current_time_offset = new_time_seconds
-        # # Keeps current_time in 24h bounds
-        # if self.current_time_offset < 0:
-        #     self.current_time_offset += SECONDS_IN_DAY
-        # elif self.current_time_offset >= SECONDS_IN_DAY:
-        #     self.current_time_offset %= SECONDS_IN_DAY
         
     def scrub_current_time_offset(self, change_seconds: int) -> None:
         self.set_current_time_offset(self.current_time_offset + change_seconds)
 
     def set_alarm_time(self, new_time_seconds: int) -> None:
-        self.alarm_time = new_time_seconds % SECONDS_IN_DAY
+        # self.alarm_time = new_time_seconds % SECONDS_IN_DAY
+        pass
     def scrub_alarm_time(self, change_seconds: int) -> None:
         self.set_alarm_time((self.alarm_time + change_seconds) % SECONDS_IN_DAY)
     def set_alarm_active(self, is_alarm_active: bool) -> None:
-        self.alarm_active = is_alarm_active
-        if self.alarm_active is False and self.alarm_thread is not None:
-            self.alarm_thread.cancel()
-            self.alarm_thread = None
-        if self.alarm_active is True:
-            self._init_alarm()
+        # self.alarm_active = is_alarm_active
+        # if self.alarm_active is False and self.alarm_thread is not None:
+        #     self.alarm_thread.cancel()
+        #     self.alarm_thread = None
+        # if self.alarm_active is True:
+        #     self._init_alarm()
+        pass
     def set_alarm_callback(self, callback: function) -> None:
         pass # TODO
     
     # Gives time in HH:MM
     def get_current_time_string(self):
-        pass
-        # time.strftime("%H:%M", time.localtime())
+        return time.strftime("%H:%M", time.localtime())
     def get_alarm_time_string(self):
-        pass
+        return "00:00"
     def get_alarm_active(self):
-        pass
+        return self.alarm_active
 
 
 
