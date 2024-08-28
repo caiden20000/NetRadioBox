@@ -269,7 +269,7 @@ class Encoder:
     def handle_rotation(self, device: evdev.InputDevice) -> None:
         print("Test 1.0")
         for event in device.read_loop():
-            print("Test1.1")
+            print("Test1.1") #TODO: read_loop is blocking.
             if event.type != 2: # 2 is REL_X type event, the rotation of the encoder
                 continue
             if event.value == 1:
@@ -303,13 +303,13 @@ class Encoder:
                 self.button_start_time = 0
 
     def set_rotate_left_callback(self, callback: function) -> None:
-        self.set_rotate_left_callback = callback
+        self.rotate_left_callback = callback
     def set_rotate_right_callback(self, callback: function) -> None:
-        self.set_rotate_right_callback = callback
+        self.rotate_right_callback = callback
     def set_button_short_callback(self, callback: function) -> None:
         self.button_short_callback = callback
     def set_button_long_callback(self, callback: function) -> None:
-        self.set_button_long_callback = callback
+        self.button_long_callback = callback
 
 
 
