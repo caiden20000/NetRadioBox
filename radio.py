@@ -257,15 +257,19 @@ class Encoder:
     
     def start(self) -> None:
         while True:
+            print("Test1")
             self.handle_rotation(self.rotary_device)
             self.handle_button(self.rotary_button_device)
+            print("Test2")
         # asyncio.gather(
         #     self.handle_rotation(self.rotary_device),
         #     self.handle_button(self.rotary_button_device)
         # )
 
     def handle_rotation(self, device: evdev.InputDevice) -> None:
+        print("Test 1.0")
         for event in device.read_loop():
+            print("Test1.1")
             if event.type != 2: # 2 is REL_X type event, the rotation of the encoder
                 continue
             if event.value == 1:
@@ -279,6 +283,7 @@ class Encoder:
             self.button_long_callback()
             
     def handle_button(self, device) -> None:
+        print("Test1.2")
         for event in device.read_loop():
             if event.code != ROTARY_BUTTON_KEYCODE:
                 continue
@@ -527,4 +532,4 @@ encoder_thread.daemon = True
 encoder_thread.start()
 
 while True:
-    radio.ui.update()
+    radio.update()
