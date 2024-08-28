@@ -172,7 +172,7 @@ class UserInterface:
         if self._get_state() == self.last_state:
             return
         self.last_state = self._get_state()
-        
+
         image = Image.new('1', (OLED_WIDTH, OLED_HEIGHT), "WHITE")
         draw = ImageDraw.Draw(image)
         time_font = ImageFont.truetype(FONT_RESOURCE, 35)
@@ -516,24 +516,11 @@ class Radio:
         self.ui.draw_ui()
 
 
-    
-# TODO: Make global Radio instance
-# TODO: Make global Encoder instance with access to Radio instance for callbacks
 
-# TODO: Run Encoder instance in another thread
-# TODO: Run Radio main loop in original thread
+##########
+### Main code
+##########
 
-# TODO: Wrap in a try/finally to clean the display before execution stops
-
-
-# ui = UserInterface()
-# ui.set_track_name("Brother Brady and the Wiggly Witches")
-# ui.set_station_number(35)
-# ui.set_time("13:45")
-# for i in range(math.floor(5//0.3)):
-#     time.sleep(0.3)
-#     ui.draw_ui()
-# ui.clear()
 
 radio = Radio()
 encoder = Encoder()
@@ -545,11 +532,15 @@ encoder.set_button_long_callback(radio.control_long_click)
 
 encoder.start()
 
+# Get station list from "station.list" and set it in the player
 url_list_file = 'station.list'
 with open(url_list_file, 'r') as file:
     url_list = [line.strip() for line in file]
 print("Initializing with station list: ", url_list)
 radio.player.set_station_list(url_list)
 
-while True:
-    radio.update()
+try:
+    while True:
+        radio.update()
+finally:
+    radio.ui.clear()
