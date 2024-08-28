@@ -255,15 +255,18 @@ class Encoder:
         self.rotary_device = evdev.InputDevice(ROTARY_ENCODER_DEVICE)
         self.rotary_button_device = evdev.InputDevice(ROTARY_ENCODER_BUTTON_DEVICE)
     
-    async def start(self) -> None:
-        await asyncio.gather(
-            self.handle_rotation(self.rotary_device),
+    def start(self) -> None:
+        while True:
+            self.handle_rotation(self.rotary_device)
             self.handle_button(self.rotary_button_device)
-        )
+        # asyncio.gather(
+        #     self.handle_rotation(self.rotary_device),
+        #     self.handle_button(self.rotary_button_device)
+        # )
 
-    async def handle_rotation(self, device) -> None:
-        async for event in device.async_read_loop():
-            if event.type != 2: # 2 is REL_X type event
+    def handle_rotation(self, device: evdev.InputDevice) -> None:
+        for event in device.read_loop():
+            if event.type != 2: # 2 is REL_X type event, the rotation of the encoder
                 continue
             if event.value == 1:
                 self.rotate_left_callback()
@@ -275,8 +278,8 @@ class Encoder:
             self.button_start_time = 0
             self.button_long_callback()
             
-    async def handle_button(self, device) -> None:
-        async for event in device.async_read_loop():
+    def handle_button(self, device) -> None:
+        for event in device.read_loop():
             if event.code != ROTARY_BUTTON_KEYCODE:
                 continue
             if event.value == 1:
@@ -484,11 +487,23 @@ class Radio:
 # TODO: Wrap in a try/finally to clean the display before execution stops
 
 
-ui = UserInterface()
-ui.set_track_name("Brother Brady and the Wiggly Witches")
-ui.set_station_number(35)
-ui.set_time("13:45")
-for i in range(math.floor(5//0.3)):
-    time.sleep(0.3)
-    ui.draw_ui()
-ui.clear()
+# ui = UserInterface()
+# ui.set_track_name("Brother Brady and the Wiggly Witches")
+# ui.set_station_number(35)
+# ui.set_time("13:45")
+# for i in range(math.floor(5//0.3)):
+#     time.sleep(0.3)
+#     ui.draw_ui()
+# ui.clear()
+
+radio = Radio()
+encoder = Encoder()
+
+encoder.set_rotate_left_callback(radio.control_left)
+encoder.set_rotate_right_callback(radio.control_right)
+encoder.button_short_callback(radio.control_short_click)
+encoder.button_long_callback(radio.control_long_click)
+
+encoder_thread = threading.Thread(target=encoder.start)
+encoder_thread.daemon = True
+encoder_thread.start()
