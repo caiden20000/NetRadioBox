@@ -531,5 +531,11 @@ encoder_thread = threading.Thread(target=encoder.start)
 encoder_thread.daemon = True
 encoder_thread.start()
 
+url_list_file = 'stations.list'
+with open(url_list_file, 'r') as file:
+    url_list = [line.strip() for line in file]
+print(url_list)
+radio.player.set_station_list(url_list)
+
 while True:
     radio.update()
