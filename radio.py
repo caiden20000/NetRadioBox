@@ -383,6 +383,8 @@ class Radio:
         self.station_active = False
         self.alarm_active = False
 
+        self.track_name = "Sound off"
+
         self.ui = UserInterface()
         self.clock = Clock()
         self.player = Player()
@@ -400,6 +402,7 @@ class Radio:
     # In TIME mode, scrubs current clock time left & update UI
     # In ALARM mode, scrubs alarm clock time left & update UI
     def control_left(self):
+        print("DEBUG: control_left")
         if self.mode == Mode.MODE:
             if self.highlighted_mode == Mode.STATION: self.highlighted_mode = Mode.ALARM
             if self.highlighted_mode == Mode.TIME:    self.highlighted_mode = Mode.STATION
@@ -423,6 +426,7 @@ class Radio:
     # In TIME mode, scrubs current clock time right & update UI
     # In ALARM mode, scrubs alarm clock time right & update UI
     def control_right(self):
+        print("DEBUG: control_right")
         if self.mode == Mode.MODE:
             if self.highlighted_mode == Mode.STATION: self.highlighted_mode = Mode.TIME
             if self.highlighted_mode == Mode.TIME:    self.highlighted_mode = Mode.ALARM
@@ -444,6 +448,7 @@ class Radio:
     # In MODE mode, makes highlighted mode the active mode & update the UI
     # In ANY OTHER mode, makes current mode the highlighted mode, makes MODE mode the active mode, & update the UI
     def control_short_click(self):
+        print("DEBUG: control_short_click")
         if self.mode == Mode.MODE:
             self.mode = self.highlighted_mode
             self.ui.set_highlight_selector(False)
@@ -458,6 +463,7 @@ class Radio:
     # In ALARM mode, toggle the alarm on/off & update the UI
     # In TIME mode, resets the time to system time & update the UI
     def control_long_click(self):
+        print("DEBUG: control_long_click")
         if self.highlighted_mode == Mode.STATION:
             self._toggle_player()
         if self.highlighted_mode == Mode.ALARM:
@@ -476,6 +482,18 @@ class Radio:
         self.alarm_active != self.alarm_active
         self.ui.alarm_active = self.alarm_active
         self.clock.set_alarm_active(self.alarm_active)
+    
+    def update(self) -> None:
+        current_track_name = self.player.get_station_track()
+        if self.track_name != current_track_name:
+            self.track_name = current_track_name
+            self.ui.set_track_name(self.track_name)
+        if self.mode == Mode.TIME:
+            self.ui.set_time(self.clock.get_current_time_string())
+        if self.mode == Mode.ALARM:
+            self.ui.set_time(self.clock.get_alarm_time_string())
+        self.ui.draw_ui()
+
 
     
 # TODO: Make global Radio instance
@@ -501,9 +519,12 @@ encoder = Encoder()
 
 encoder.set_rotate_left_callback(radio.control_left)
 encoder.set_rotate_right_callback(radio.control_right)
-encoder.button_short_callback(radio.control_short_click)
-encoder.button_long_callback(radio.control_long_click)
+encoder.set_button_short_callback(radio.control_short_click)
+encoder.set_button_long_callback(radio.control_long_click)
 
 encoder_thread = threading.Thread(target=encoder.start)
 encoder_thread.daemon = True
 encoder_thread.start()
+
+while True:
+    radio.ui.update()
