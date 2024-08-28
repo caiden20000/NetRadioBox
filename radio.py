@@ -525,13 +525,13 @@ class Radio:
 
     def _toggle_player(self) -> None:
         print("DEBUG: _toggle_player")
-        self.station_active != self.station_active
+        self.station_active = not self.station_active
         self.ui.set_station_active(self.station_active)
         if self.station_active: self.player.play()
         else: self.player.stop()
     def _toggle_alarm(self) -> None:
         print("DEBUG: _toggle_alarm")
-        self.alarm_active != self.alarm_active
+        self.alarm_active = not self.alarm_active
         self.ui.set_alarm_active(self.alarm_active)
         self.clock.set_alarm_active(self.alarm_active)
     
