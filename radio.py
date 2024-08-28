@@ -53,6 +53,11 @@ from types import FunctionType as function
 # TODO: Time blinks in alarm mode
 # TODO: Colon blinks always
 
+# BUG: Several events will queue. This is an issue because turning the encoder can be very fast,
+#      and all the events will be queued up despite the user not turning the encoder anymore.
+
+# BUG: The UI doesn't update for the scrolling text
+
 ##########
 ### Constants
 ##########
