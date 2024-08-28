@@ -427,6 +427,8 @@ class Radio:
         self.player = Player()
 
         self.clock.set_alarm_callback(self.alarm_active)
+
+        self._sync_ui()
     
     def alarm_active(self):
         self.station_active = True
