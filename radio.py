@@ -241,6 +241,8 @@ class Player:
         self.station_list = station_list
     
     def play(self) -> None:
+        if self.media is None:
+            self._init_media(self.station_list[self.current_station_number])
         self.player.play()
         self.is_playing = True
 
