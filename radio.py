@@ -106,6 +106,8 @@ class UserInterface:
         self.display.Init()
         self.display.clear()
 
+        self.last_state = ""
+
     def _get_scrolling_track_name(self, max_chars: int, scroll_speed: int = 300, ends_hold_multiple: int = 3):
         overflow_size = len(self.track_name) - max_chars
         # If length of text fits within bounds, we don't need to do anything
@@ -156,7 +158,21 @@ class UserInterface:
     def clear(self):
         self.display.clear()
 
+    def _get_state(self):
+        return  str(self.track_name) + \
+                str(self.time) + \
+                str(self.station_number) + \
+                str(self.selected_mode) + \
+                str(self.highlight_selector) + \
+                str(self.alarm_active) + \
+                str(self.station_active)
+
     def draw_ui(self):
+        # Prevent redrawing identical content
+        if self._get_state() == self.last_state:
+            return
+        self.last_state = self._get_state()
+        
         image = Image.new('1', (OLED_WIDTH, OLED_HEIGHT), "WHITE")
         draw = ImageDraw.Draw(image)
         time_font = ImageFont.truetype(FONT_RESOURCE, 35)
