@@ -49,6 +49,10 @@ from PIL import Image,ImageDraw,ImageFont
 from enum import Enum
 from types import FunctionType as function
 
+# TODO: Time blinks in time mode
+# TODO: Time blinks in alarm mode
+# TODO: Colon blinks always
+
 ##########
 ### Constants
 ##########
@@ -204,9 +208,10 @@ class UserInterface:
         scrolled_track_name = self._get_scrolling_track_name()
         draw.text((31, 45), scrolled_track_name, font = station_font, fill = 0)
         # Draw modes
-        draw.ellipse([(120, 10), (126, 16)], "WHITE", 0, 6 if self.station_active else 1) # Statio Mode
+        draw.ellipse([(120, 10), (126, 16)], "WHITE", 0, 6 if self.station_active else 1) # Station Mode
         draw.ellipse([(120, 25), (126, 31)], "WHITE", 0, 1) # Time Mode
         draw.ellipse([(120, 40), (126, 46)], "WHITE", 0, 6 if self.alarm_active else 1) # Alarm Mode
+        print("UI FLAGS:",self.station_active, self.alarm_active, sep="")
         # Draw mode selection box
         # TODO: Draw the mode selection box around correct circle
         if self.selected_mode == Mode.STATION: draw.line([(115, 12), (115, 14)], None, 3 if self.highlight_selector else 1)
