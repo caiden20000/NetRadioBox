@@ -241,12 +241,14 @@ class Player:
         self.station_list = station_list
     
     def play(self) -> None:
+        print("Player starting playback")
         if self.media is None:
             self._init_media(self.station_list[self.current_station_number])
         self.player.play()
         self.is_playing = True
 
     def stop(self) -> None:
+        print("Player stopping playback")
         self.player.stop()
         self.media = None
         self.is_playing = False
@@ -254,9 +256,11 @@ class Player:
     def set_station(self, new_station_number: int) -> bool:
         if new_station_number < 0 or new_station_number >= len(self.station_list):
             return False
+        if self.is_playing: self.player.stop()
         self.current_station_number = new_station_number
         self._init_media(self.station_list[new_station_number])
-        if self.is_playing: self.play()
+        if self.is_playing: self.player.play()
+        print("Now playing station ", self.current_station_number)
         return True
 
     def scrub_station(self, distance: int) -> None:
@@ -308,9 +312,9 @@ class Encoder:
             if event.type != 2: # 2 is REL_X type event, the rotation of the encoder
                 continue
             if event.value == 1:
-                self.rotate_left_callback()
-            if event.value == -1:
                 self.rotate_right_callback()
+            if event.value == -1:
+                self.rotate_left_callback()
 
     def _check_button_long(self) -> None:
         if self.button and time_now() - self.button_start_time >= BUTTON_LONG_PRESS_DURATION_MS:
