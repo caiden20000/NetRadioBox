@@ -254,23 +254,23 @@ class Encoder:
         
         self.rotary_device = evdev.InputDevice(ROTARY_ENCODER_DEVICE)
         self.rotary_button_device = evdev.InputDevice(ROTARY_ENCODER_BUTTON_DEVICE)
+
+        self.rotation_thread = None
+        self.button_thread = None
+
+    def _make_daemon_thread(self, function: function) -> None:
+        thread = threading.Thread(target=function)
+        thread.daemon = True
+        thread.start()
+        return thread
     
     def start(self) -> None:
-        while True:
-            print("Test1")
-            self.handle_rotation(self.rotary_device)
-            self.handle_button(self.rotary_button_device)
-            print("Test2")
-        # asyncio.gather(
-        #     self.handle_rotation(self.rotary_device),
-        #     self.handle_button(self.rotary_button_device)
-        # )
-    #TODO: read_loop is blocking.
-    #TODO: Make each handle_x run in its own thread
+        # Note: read_loop is blocking! That's why it has to be run in its own thread
+        self.rotatation_thread = self._make_daemon_thread(lambda: self.handle_rotation(self.rotary_device))
+        self.button_thread = self._make_daemon_thread(lambda: self.handle_button(self.rotary_button_device))
+
     def handle_rotation(self, device: evdev.InputDevice) -> None:
-        print("Test 1.0")
         for event in device.read_loop():
-            print("Test1.1") 
             if event.type != 2: # 2 is REL_X type event, the rotation of the encoder
                 continue
             if event.value == 1:
@@ -284,7 +284,6 @@ class Encoder:
             self.button_long_callback()
             
     def handle_button(self, device) -> None:
-        print("Test1.2")
         for event in device.read_loop():
             if event.code != ROTARY_BUTTON_KEYCODE:
                 continue
@@ -408,7 +407,7 @@ class Radio:
     # In TIME mode, scrubs current clock time left & update UI
     # In ALARM mode, scrubs alarm clock time left & update UI
     def control_left(self):
-        print("DEBUG: control_left")
+        # print("DEBUG: control_left")
         if self.mode == Mode.MODE:
             if self.highlighted_mode == Mode.STATION: self.highlighted_mode = Mode.ALARM
             if self.highlighted_mode == Mode.TIME:    self.highlighted_mode = Mode.STATION
@@ -432,7 +431,7 @@ class Radio:
     # In TIME mode, scrubs current clock time right & update UI
     # In ALARM mode, scrubs alarm clock time right & update UI
     def control_right(self):
-        print("DEBUG: control_right")
+        # print("DEBUG: control_right")
         if self.mode == Mode.MODE:
             if self.highlighted_mode == Mode.STATION: self.highlighted_mode = Mode.TIME
             if self.highlighted_mode == Mode.TIME:    self.highlighted_mode = Mode.ALARM
@@ -454,7 +453,7 @@ class Radio:
     # In MODE mode, makes highlighted mode the active mode & update the UI
     # In ANY OTHER mode, makes current mode the highlighted mode, makes MODE mode the active mode, & update the UI
     def control_short_click(self):
-        print("DEBUG: control_short_click")
+        # print("DEBUG: control_short_click")
         if self.mode == Mode.MODE:
             self.mode = self.highlighted_mode
             self.ui.set_highlight_selector(False)
@@ -469,7 +468,7 @@ class Radio:
     # In ALARM mode, toggle the alarm on/off & update the UI
     # In TIME mode, resets the time to system time & update the UI
     def control_long_click(self):
-        print("DEBUG: control_long_click")
+        # print("DEBUG: control_long_click")
         if self.highlighted_mode == Mode.STATION:
             self._toggle_player()
         if self.highlighted_mode == Mode.ALARM:
@@ -528,14 +527,12 @@ encoder.set_rotate_right_callback(radio.control_right)
 encoder.set_button_short_callback(radio.control_short_click)
 encoder.set_button_long_callback(radio.control_long_click)
 
-encoder_thread = threading.Thread(target=encoder.start)
-encoder_thread.daemon = True
-encoder_thread.start()
+encoder.start()
 
 url_list_file = 'station.list'
 with open(url_list_file, 'r') as file:
     url_list = [line.strip() for line in file]
-print(url_list)
+print("Initializing with station list: ", url_list)
 radio.player.set_station_list(url_list)
 
 while True:
