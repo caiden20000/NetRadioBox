@@ -49,7 +49,6 @@ from PIL import Image,ImageDraw,ImageFont
 from enum import Enum
 from types import FunctionType as function
 
-# TODO: Colon blinks always
 # TODO: Mode resets to station after amount of time
 # TODO: Auto timezone support based on wifi location
 
@@ -77,6 +76,8 @@ ROTARY_BUTTON_KEYCODE = 28
 CLOCK_BLINK_ON_MS = 500
 CLOCK_BLINK_OFF_MS = 500
 
+COLON_BLINK_ON_MS = 500
+COLON_BLINK_OFF_MS = 500
 
 ##########
 ### Utility functions
@@ -419,8 +420,8 @@ class Clock:
         pass # TODO
     
     # Gives time in HH:MM
-    def get_current_time_string(self):
-        return time.strftime("%H:%M", time.localtime())
+    def get_current_time_string(self, with_colon: bool = True):
+        return time.strftime(f'%H{":" if with_colon else " "}%M', time.localtime())
     def get_alarm_time_string(self):
         return "00:00"
     def get_alarm_active(self):
@@ -449,6 +450,10 @@ class Radio:
         self.clock_blink_timer = None
         self.clock_blink_enabled = False
         self.clock_blink_faceon = True
+
+        self.colon_blink_timer = None
+        self.colon_blink_enabled = False
+        self.colon_blink_faceon = True
 
         self._sync_ui()
     
@@ -483,6 +488,37 @@ class Radio:
             self.clock_blink_timer = threading.Timer(CLOCK_BLINK_ON_MS / 1000, self._clock_blink_schedule)
         else:
             self.clock_blink_timer = threading.Timer(CLOCK_BLINK_OFF_MS / 1000, self._clock_blink_schedule)
+    
+    ### The following 3 methods are basically copies of the above 3.
+
+    def _enable_colon_blink(self):
+        self.colon_blink_enabled = True
+        # Initialize to false b/c _colon_blink_schedule inverts initially.
+        self.colon_blink_faceon = False
+        self._colon_blink_schedule()
+    def _disable_colon_blink(self):
+        self.colon_blink_enabled = False
+        if self.colon_blink_timer is not None:
+            self.colon_blink_timer.cancel()
+            self.colon_blink_timer = None
+    
+    def _colon_blink_schedule(self):
+        if self.colon_blink_timer is not None:
+            self.colon_blink_timer.cancel()
+        if self.colon_blink_enabled is False:
+            return
+        self.colon_blink_faceon = not self.colon_blink_faceon
+
+        if self.highlighted_mode == Mode.STATION:
+            self.ui.set_time(self.clock.get_current_time_string(self.colon_blink_faceon))
+        else:
+            print("Bug: Colon blinking when not in STATION mode!")
+
+        self.ui.draw_ui()
+        if self.colon_blink_faceon:
+            self.colon_blink_timer = threading.Timer(COLON_BLINK_ON_MS / 1000, self._colon_blink_schedule)
+        else:
+            self.colon_blink_timer = threading.Timer(COLON_BLINK_OFF_MS / 1000, self._colon_blink_schedule)
 
     def alarm_active(self):
         self.station_active = True
@@ -503,8 +539,12 @@ class Radio:
 
             if self.highlighted_mode == Mode.TIME or self.highlighted_mode == Mode.ALARM:
                 self._enable_clock_blink()
-            else:
+                self._disable_colon_blink()
+                if self.highlighted_mode == Mode.ALARM: self.ui.set_time(self.clock.get_alarm_time_string())
+                else: self.ui.set_time(self.clock.get_current_time_string())
+            elif self.highlighted_mode == Mode.STATION:
                 self._disable_clock_blink()
+                self._enable_colon_blink()
             self.ui.set_selected_mode(self.highlighted_mode)
 
         if self.mode == Mode.STATION:
@@ -521,8 +561,7 @@ class Radio:
             self._enable_clock_blink()
             self.ui.set_time(self.clock.get_alarm_time_string())
             
-        if self.highlighted_mode == Mode.ALARM: self.ui.set_time(self.clock.get_alarm_time_string())
-        else: self.ui.set_time(self.clock.get_current_time_string())
+        
         self.ui.draw_ui()
     
     # In MODE mode, scrubs highlighted mode right & update UI
@@ -538,8 +577,12 @@ class Radio:
 
             if self.highlighted_mode == Mode.TIME or self.highlighted_mode == Mode.ALARM:
                 self._enable_clock_blink()
-            else:
+                self._disable_colon_blink()
+                if self.highlighted_mode == Mode.ALARM: self.ui.set_time(self.clock.get_alarm_time_string())
+                else: self.ui.set_time(self.clock.get_current_time_string())
+            elif self.highlighted_mode == Mode.STATION:
                 self._disable_clock_blink()
+                self._enable_colon_blink()
             self.ui.set_selected_mode(self.highlighted_mode)
 
         if self.mode == Mode.STATION:
@@ -556,8 +599,6 @@ class Radio:
             self._enable_clock_blink()
             self.ui.set_time(self.clock.get_alarm_time_string())
 
-        if self.highlighted_mode == Mode.ALARM: self.ui.set_time(self.clock.get_alarm_time_string())
-        else: self.ui.set_time(self.clock.get_current_time_string())
         self.ui.draw_ui()
     
     # In MODE mode, makes highlighted mode the active mode & update the UI
