@@ -77,6 +77,10 @@ ROTARY_ENCODER_BUTTON_DEVICE = '/dev/input/event0'
 BUTTON_LONG_PRESS_DURATION_MS = 800
 ROTARY_BUTTON_KEYCODE = 28
 
+# Clock blinking
+CLOCK_BLINK_ON_MS = 500
+CLOCK_BLINK_OFF_MS = 500
+
 
 ##########
 ### Utility functions
@@ -120,7 +124,7 @@ class UserInterface:
         self.update_required = True
         self.scroll_speed = 300
         self.max_chars = 13
-        self.update_schedule_thread = None
+        self.update_schedule_timer = None
 
     def _get_scrolling_track_name(self, max_chars: int = 13, scroll_speed: int = 300, ends_hold_multiple: int = 3):
         overflow_size = len(self.track_name) - max_chars
@@ -147,11 +151,11 @@ class UserInterface:
 
     def _update_schedule(self):
         self.update_required = True
-        if self.update_schedule_thread is not None:
-            self.update_schedule_thread.cancel()
+        if self.update_schedule_timer is not None:
+            self.update_schedule_timer.cancel()
         if len(self.track_name) > self.max_chars:
             # We are scrolling, so we need to update the schedule thread
-            self.update_schedule_thread = threading.Timer(self.scroll_speed / 1000, self._update_schedule)
+            self.update_schedule_timer = threading.Timer(self.scroll_speed / 1000, self._update_schedule)
         self.draw_ui()
 
     def set_time(self, new_time: str) -> None:
@@ -446,8 +450,35 @@ class Radio:
 
         self.clock.set_alarm_callback(self.alarm_active)
 
+        self.clock_blink_timer = None
+        self.clock_blink_enabled = False
+        self.clock_blink_faceon = True
+
         self._sync_ui()
     
+    def _enable_clock_blink(self):
+        self.clock_blink_enabled = True
+        self.clock_blink_faceon = False
+        self._clock_blink_schedule()
+    def _disable_clock_blink(self):
+        self.clock_blink_enabled = False
+        if self.clock_blink_timer is not None:
+            self.clock_blink_timer.cancel()
+            self.clock_blink_timer = None
+    
+    def _clock_blink_schedule(self):
+        if self.clock_blink_timer is not None:
+            self.clock_blink_timer.cancel()
+        if self.clock_blink_enabled is False:
+            return
+        self.clock_blink_faceon = not self.clock_blink_faceon
+        if self.clock_blink_faceon:
+            self.ui.set_time(self.clock.get_current_time_string())
+        else:
+            self.ui.set_time("  :  ")
+        self.clock_blink_timer = threading.Timer(CLOCK_BLINK_ON_MS / 1000, self._clock_blink_schedule)
+        
+
     def alarm_active(self):
         self.station_active = True
         self.player.play()
