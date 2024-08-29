@@ -197,6 +197,7 @@ class UserInterface:
 
     def draw_ui(self):
         # Prevent redrawing identical content
+        print("Draw_ui called: ", "UPDATING screen!" if self.update_required else "--static--")
         if self.update_required == False:
             return
         self.update_required = False
@@ -219,7 +220,6 @@ class UserInterface:
         draw.ellipse([(120, 10), (126, 16)], "WHITE", 0, 6 if self.station_active else 1) # Station Mode
         draw.ellipse([(120, 25), (126, 31)], "WHITE", 0, 1) # Time Mode
         draw.ellipse([(120, 40), (126, 46)], "WHITE", 0, 6 if self.alarm_active else 1) # Alarm Mode
-        print("UI FLAGS:",self.station_active, self.alarm_active, sep="")
         # Draw mode selection box
         # TODO: Draw the mode selection box around correct circle
         if self.selected_mode == Mode.STATION: draw.line([(115, 12), (115, 14)], None, 3 if self.highlight_selector else 1)
@@ -515,6 +515,7 @@ class Radio:
             print("Bug: Colon blinking when not in STATION mode!")
 
         self.ui.draw_ui()
+        print("DEBUG: Colon blink faceon: ", self.colon_blink_faceon)
         if self.colon_blink_faceon:
             self.colon_blink_timer = threading.Timer(COLON_BLINK_ON_MS / 1000, self._colon_blink_schedule)
         else:
