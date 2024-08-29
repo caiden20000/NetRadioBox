@@ -454,6 +454,7 @@ class Radio:
     
     def _enable_clock_blink(self):
         self.clock_blink_enabled = True
+        # Initialize to false b/c _clock_blink_schedule inverts initially.
         self.clock_blink_faceon = False
         self._clock_blink_schedule()
     def _disable_clock_blink(self):
@@ -478,8 +479,10 @@ class Radio:
         else:
             self.ui.set_time("  :  ")
         self.ui.draw_ui()
-        self.clock_blink_timer = threading.Timer(CLOCK_BLINK_ON_MS / 1000, self._clock_blink_schedule)
-        
+        if self.clock_blink_faceon:
+            self.clock_blink_timer = threading.Timer(CLOCK_BLINK_ON_MS / 1000, self._clock_blink_schedule)
+        else:
+            self.clock_blink_timer = threading.Timer(CLOCK_BLINK_OFF_MS / 1000, self._clock_blink_schedule)
 
     def alarm_active(self):
         self.station_active = True
