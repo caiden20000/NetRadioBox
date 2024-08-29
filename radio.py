@@ -49,16 +49,12 @@ from PIL import Image,ImageDraw,ImageFont
 from enum import Enum
 from types import FunctionType as function
 
-# TODO: Time blinks in time mode
-# TODO: Time blinks in alarm mode
 # TODO: Colon blinks always
 # TODO: Mode resets to station after amount of time
 # TODO: Auto timezone support based on wifi location
 
 # BUG: Several events will queue. This is an issue because turning the encoder can be very fast,
 #      and all the events will be queued up despite the user not turning the encoder anymore.
-
-# BUG: The UI doesn't update for the scrolling text
 
 ##########
 ### Constants
@@ -76,6 +72,10 @@ ROTARY_ENCODER_DEVICE = '/dev/input/event3'
 ROTARY_ENCODER_BUTTON_DEVICE = '/dev/input/event0'
 BUTTON_LONG_PRESS_DURATION_MS = 800
 ROTARY_BUTTON_KEYCODE = 28
+
+# Clock blinking
+CLOCK_BLINK_ON_MS = 500
+CLOCK_BLINK_OFF_MS = 500
 
 
 ##########
@@ -120,7 +120,7 @@ class UserInterface:
         self.update_required = True
         self.scroll_speed = 300
         self.max_chars = 13
-        self.update_schedule_thread = None
+        self.update_schedule_timer = None
 
     def _get_scrolling_track_name(self, max_chars: int = 13, scroll_speed: int = 300, ends_hold_multiple: int = 3):
         overflow_size = len(self.track_name) - max_chars
@@ -147,11 +147,11 @@ class UserInterface:
 
     def _update_schedule(self):
         self.update_required = True
-        if self.update_schedule_thread is not None:
-            self.update_schedule_thread.cancel()
+        if self.update_schedule_timer is not None:
+            self.update_schedule_timer.cancel()
         if len(self.track_name) > self.max_chars:
             # We are scrolling, so we need to update the schedule thread
-            self.update_schedule_thread = threading.Timer(self.scroll_speed / 1000, self._update_schedule)
+            self.update_schedule_timer = threading.Timer(self.scroll_speed / 1000, self._update_schedule)
         self.draw_ui()
 
     def set_time(self, new_time: str) -> None:
@@ -446,8 +446,44 @@ class Radio:
 
         self.clock.set_alarm_callback(self.alarm_active)
 
+        self.clock_blink_timer = None
+        self.clock_blink_enabled = False
+        self.clock_blink_faceon = True
+
         self._sync_ui()
     
+    def _enable_clock_blink(self):
+        self.clock_blink_enabled = True
+        # Initialize to false b/c _clock_blink_schedule inverts initially.
+        self.clock_blink_faceon = False
+        self._clock_blink_schedule()
+    def _disable_clock_blink(self):
+        self.clock_blink_enabled = False
+        if self.clock_blink_timer is not None:
+            self.clock_blink_timer.cancel()
+            self.clock_blink_timer = None
+    
+    def _clock_blink_schedule(self):
+        if self.clock_blink_timer is not None:
+            self.clock_blink_timer.cancel()
+        if self.clock_blink_enabled is False:
+            return
+        self.clock_blink_faceon = not self.clock_blink_faceon
+        if self.clock_blink_faceon:
+            if self.highlighted_mode == Mode.TIME:
+                self.ui.set_time(self.clock.get_current_time_string())
+            elif self.highlighted_mode == Mode.ALARM:
+                self.ui.set_time(self.clock.get_alarm_time_string())
+            else:
+                print("Bug: Clock blinking when not in Time or Alarm mode!")
+        else:
+            self.ui.set_time("  :  ")
+        self.ui.draw_ui()
+        if self.clock_blink_faceon:
+            self.clock_blink_timer = threading.Timer(CLOCK_BLINK_ON_MS / 1000, self._clock_blink_schedule)
+        else:
+            self.clock_blink_timer = threading.Timer(CLOCK_BLINK_OFF_MS / 1000, self._clock_blink_schedule)
+
     def alarm_active(self):
         self.station_active = True
         self.player.play()
@@ -462,18 +498,29 @@ class Radio:
         print("DEBUG: control_left")
         if self.mode == Mode.MODE:
             if self.highlighted_mode == Mode.STATION: self.highlighted_mode = Mode.ALARM
-            elif self.highlighted_mode == Mode.TIME:    self.highlighted_mode = Mode.STATION
-            elif self.highlighted_mode == Mode.ALARM:   self.highlighted_mode = Mode.TIME
+            elif self.highlighted_mode == Mode.TIME:  self.highlighted_mode = Mode.STATION
+            elif self.highlighted_mode == Mode.ALARM: self.highlighted_mode = Mode.TIME
+
+            if self.highlighted_mode == Mode.TIME or self.highlighted_mode == Mode.ALARM:
+                self._enable_clock_blink()
+            else:
+                self._disable_clock_blink()
             self.ui.set_selected_mode(self.highlighted_mode)
+
         if self.mode == Mode.STATION:
             self.player.scrub_station(-1)
             self.ui.set_station_number(self.player.get_station_number())
+
         if self.mode == Mode.TIME:
             self.clock.scrub_current_time_offset(-1)
+            self._enable_clock_blink()
             self.ui.set_time(self.clock.get_current_time_string())
+
         if self.mode == Mode.ALARM:
             self.clock.scrub_alarm_time(-1)
+            self._enable_clock_blink()
             self.ui.set_time(self.clock.get_alarm_time_string())
+            
         if self.highlighted_mode == Mode.ALARM: self.ui.set_time(self.clock.get_alarm_time_string())
         else: self.ui.set_time(self.clock.get_current_time_string())
         self.ui.draw_ui()
@@ -486,18 +533,29 @@ class Radio:
         print("DEBUG: control_right")
         if self.mode == Mode.MODE:
             if self.highlighted_mode == Mode.STATION: self.highlighted_mode = Mode.TIME
-            elif self.highlighted_mode == Mode.TIME:    self.highlighted_mode = Mode.ALARM
-            elif self.highlighted_mode == Mode.ALARM:   self.highlighted_mode = Mode.STATION
+            elif self.highlighted_mode == Mode.TIME:  self.highlighted_mode = Mode.ALARM
+            elif self.highlighted_mode == Mode.ALARM: self.highlighted_mode = Mode.STATION
+
+            if self.highlighted_mode == Mode.TIME or self.highlighted_mode == Mode.ALARM:
+                self._enable_clock_blink()
+            else:
+                self._disable_clock_blink()
             self.ui.set_selected_mode(self.highlighted_mode)
+
         if self.mode == Mode.STATION:
             self.player.scrub_station(1)
             self.ui.set_station_number(self.player.get_station_number())
+
         if self.mode == Mode.TIME:
             self.clock.scrub_current_time_offset(1)
+            self._enable_clock_blink()
             self.ui.set_time(self.clock.get_current_time_string())
+
         if self.mode == Mode.ALARM:
             self.clock.scrub_alarm_time(1)
+            self._enable_clock_blink()
             self.ui.set_time(self.clock.get_alarm_time_string())
+
         if self.highlighted_mode == Mode.ALARM: self.ui.set_time(self.clock.get_alarm_time_string())
         else: self.ui.set_time(self.clock.get_current_time_string())
         self.ui.draw_ui()
