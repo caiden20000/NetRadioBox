@@ -153,6 +153,7 @@ class UserInterface:
         if len(self.track_name) > self.max_chars:
             # We are scrolling, so we need to update the schedule thread
             self.update_schedule_timer = threading.Timer(self.scroll_speed / 1000, self._update_schedule)
+            self.update_schedule_timer.start()
         self.draw_ui()
 
     def set_time(self, new_time: str) -> None:
@@ -197,10 +198,10 @@ class UserInterface:
 
     def draw_ui(self):
         # Prevent redrawing identical content
-        print("Draw_ui called: ", "UPDATING screen!" if self.update_required else "--static--")
         if self.update_required == False:
             return
         self.update_required = False
+        print("Draw_ui called: UPDATING screen!")
 
         image = Image.new('1', (OLED_WIDTH, OLED_HEIGHT), "WHITE")
         draw = ImageDraw.Draw(image)
@@ -488,6 +489,7 @@ class Radio:
             self.clock_blink_timer = threading.Timer(CLOCK_BLINK_ON_MS / 1000, self._clock_blink_schedule)
         else:
             self.clock_blink_timer = threading.Timer(CLOCK_BLINK_OFF_MS / 1000, self._clock_blink_schedule)
+        self.clock_blink_timer.start()
     
     ### The following 3 methods are basically copies of the above 3.
 
@@ -520,6 +522,7 @@ class Radio:
             self.colon_blink_timer = threading.Timer(COLON_BLINK_ON_MS / 1000, self._colon_blink_schedule)
         else:
             self.colon_blink_timer = threading.Timer(COLON_BLINK_OFF_MS / 1000, self._colon_blink_schedule)
+        self.colon_blink_timer.start()
 
     def alarm_active(self):
         self.station_active = True
