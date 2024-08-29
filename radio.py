@@ -151,7 +151,7 @@ class UserInterface:
             self.update_schedule_thread.cancel()
         if len(self.track_name) > self.max_chars:
             # We are scrolling, so we need to update the schedule thread
-            self.update_schedule_thread = threading.Timer(self.scroll_speed, self._update_schedule)
+            self.update_schedule_thread = threading.Timer(self.scroll_speed / 1000, self._update_schedule)
         self.draw_ui()
 
     def set_time(self, new_time: str) -> None:
