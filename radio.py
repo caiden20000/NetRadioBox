@@ -49,16 +49,12 @@ from PIL import Image,ImageDraw,ImageFont
 from enum import Enum
 from types import FunctionType as function
 
-# TODO: Time blinks in time mode
-# TODO: Time blinks in alarm mode
 # TODO: Colon blinks always
 # TODO: Mode resets to station after amount of time
 # TODO: Auto timezone support based on wifi location
 
 # BUG: Several events will queue. This is an issue because turning the encoder can be very fast,
 #      and all the events will be queued up despite the user not turning the encoder anymore.
-
-# BUG: The UI doesn't update for the scrolling text
 
 ##########
 ### Constants
