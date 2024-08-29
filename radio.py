@@ -469,7 +469,12 @@ class Radio:
             return
         self.clock_blink_faceon = not self.clock_blink_faceon
         if self.clock_blink_faceon:
-            self.ui.set_time(self.clock.get_current_time_string())
+            if self.highlighted_mode == Mode.TIME:
+                self.ui.set_time(self.clock.get_current_time_string())
+            elif self.highlighted_mode == Mode.ALARM:
+                self.ui.set_time(self.clock.get_alarm_time_string())
+            else:
+                print("Bug: Clock blinking when not in Time or Alarm mode!")
         else:
             self.ui.set_time("  :  ")
         self.ui.draw_ui()
