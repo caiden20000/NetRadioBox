@@ -98,7 +98,7 @@ class Radio:
             print("Bug: Colon blinking when not in STATION mode!")
 
         self.ui.draw_ui()
-        print("DEBUG: Colon blink faceon: ", self.colon_blink_faceon)
+        # print("DEBUG: Colon blink faceon: ", self.colon_blink_faceon)
         if self.colon_blink_faceon:
             self.colon_blink_timer = threading.Timer(COLON_BLINK_ON_MS / 1000, self._colon_blink_schedule)
         else:

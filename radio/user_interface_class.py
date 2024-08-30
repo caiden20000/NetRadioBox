@@ -140,7 +140,6 @@ class UserInterface:
         if self.update_required is False:
             return
         self.update_required = False
-        print("Draw_ui called: UPDATING screen!")
 
         image = Image.new('1', (OLED_WIDTH, OLED_HEIGHT), "WHITE")
         draw = ImageDraw.Draw(image)
