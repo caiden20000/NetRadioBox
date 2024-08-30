@@ -1,10 +1,16 @@
 asyncio==3.4.3
 colorzero==2.0
 evdev==1.7.1
+exceptiongroup==1.2.2
 gpiozero==2.0.1
+iniconfig==2.0.0
 lgpio==0.2.2.0
 numpy==2.1.0
+packaging==24.1
 pillow==10.4.0
+pluggy==1.5.0
+pytest==8.3.2
 python-vlc==3.0.20123
 smbus==1.1.post2
 spidev==3.6
+tomli==2.0.1
