@@ -46,7 +46,6 @@ class UserInterface:
         self.max_chars = 13
         self.update_schedule_timer = None
 
-        self.queued_image = None
         self.last_draw = time_now()
         self.update_timer = None
 
@@ -131,13 +130,14 @@ class UserInterface:
             self.last_draw = time_now()
         # Otherwise, come back in X ms to try again.
         else:
-            self.update_timer = threading.Timer(SCREEN_FRAME_UPDATE_DURATION_MS / 1000, lambda: self._schedule_draw(image))
+            time_left = SCREEN_FRAME_UPDATE_DURATION_MS - (time_now() - self.last_draw)
+            self.update_timer = threading.Timer(time_left / 1000, lambda: self._schedule_draw(image))
             self.update_timer.start()
 
 
     def draw_ui(self):
         # Prevent redrawing identical content
-        if self.update_required == False:
+        if self.update_required is False:
             return
         self.update_required = False
         print("Draw_ui called: UPDATING screen!")
@@ -161,9 +161,12 @@ class UserInterface:
         draw.ellipse([(120, 25), (126, 31)], "WHITE", 0, 1) # Time Mode
         draw.ellipse([(120, 40), (126, 46)], "WHITE", 0, 6 if self.alarm_active else 1) # Alarm Mode
         # Draw mode selection box
-        if self.selected_mode == Mode.STATION: draw.line([(115, 12), (115, 14)], None, 3 if self.highlight_selector else 1)
-        if self.selected_mode == Mode.TIME:    draw.line([(115, 27), (115, 29)], None, 3 if self.highlight_selector else 1)
-        if self.selected_mode == Mode.ALARM:   draw.line([(115, 42), (115, 44)], None, 3 if self.highlight_selector else 1)
+        if self.selected_mode == Mode.STATION:
+            draw.line([(115, 12), (115, 14)], None, 3 if self.highlight_selector else 1)
+        if self.selected_mode == Mode.TIME:
+            draw.line([(115, 27), (115, 29)], None, 3 if self.highlight_selector else 1)
+        if self.selected_mode == Mode.ALARM:
+            draw.line([(115, 42), (115, 44)], None, 3 if self.highlight_selector else 1)
         # Render drawings onto screen
         image = image.rotate(180)
         self._schedule_draw(image)
