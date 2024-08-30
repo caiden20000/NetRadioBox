@@ -126,6 +126,7 @@ class UserInterface:
             self.update_timer.cancel()
         # If it has been long enough since the last frame, draw the image.
         if time_now() - self.last_draw >= SCREEN_FRAME_UPDATE_DURATION_MS:
+            print("Drawing image, after ", time_now() - self.last_draw)
             self.display.ShowImage(self.display.getbuffer(image))
             self.last_draw = time_now()
         # Otherwise, come back in X ms to try again.
