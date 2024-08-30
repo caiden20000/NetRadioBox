@@ -82,6 +82,7 @@ COLON_BLINK_OFF_MS = 1000
 
 # Screen update speed
 SCREEN_FRAME_UPDATE_DURATION_MS = 150
+#TODO: Screen still updates fast?
 
 ##########
 ### Utility functions
