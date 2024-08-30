@@ -1,40 +1,38 @@
 # Caiden Wiley, Aug 2024
+"""
+Deprecated. Use __init__.py instead.
+This is here because we _know_ it works.
+It is for reference only.
+"""
 
-''' Architecture
-Class UserInterface
-    - Controls the screen
-    - Abstracts drawing
-    - Takes in text and numbers to modify the UI
-    - Changes on update to values
-Class Player
-    - Controls audio via VLC library
-    - Maintains list of stations
-    - Abstracts switching stations
-    - Exposes station information
-Class Encoder
-    - Captures event data from rotary_encoder device
-    - Captures "enter" key presses from rotary_encoder button
-    - Exposes callbacks for each event type
-    - Will run on separate thread
-Class Clock
-    - Keeps track of the time representations
-    - Has current time and alarm time
-    - Abstracts setting of time (delta change in minutes)
-    - Controls enabling/disabling of alarm
-Class Radio
-    - Aggregates UserInterface, Player, and Clock classes
-    - Controls UserInterface with data from Player and Clock
-    - Exposes UI-control level functions (What a user would activate via button)
-    - Controls mode-based control
+### Architecture
+# Class UserInterface
+#     - Controls the screen
+#     - Abstracts drawing
+#     - Takes in text and numbers to modify the UI
+#     - Changes on update to values
+# Class Player
+#     - Controls audio via VLC library
+#     - Maintains list of stations
+#     - Abstracts switching stations
+#     - Exposes station information
+# Class Encoder
+#     - Captures event data from rotary_encoder device
+#     - Captures "enter" key presses from rotary_encoder button
+#     - Exposes callbacks for each event type
+#     - Will run on separate thread
+# Class Clock
+#     - Keeps track of the time representations
+#     - Has current time and alarm time
+#     - Abstracts setting of time (delta change in minutes)
+#     - Controls enabling/disabling of alarm
+# Class Radio
+#     - Aggregates UserInterface, Player, and Clock classes
+#     - Controls UserInterface with data from Player and Clock
+#     - Exposes UI-control level functions (What a user would activate via button)
+#     - Controls mode-based control
 
-Questions:
-Who controls the mode?
-    A: Radio class
-What indicates we are in mode-selecting mode?
-    A: Thicker selection box
 
-The radio class needs to take care of
-'''
 
 
 import sys, os
