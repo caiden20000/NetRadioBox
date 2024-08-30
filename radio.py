@@ -80,6 +80,9 @@ CLOCK_BLINK_OFF_MS = 500
 COLON_BLINK_ON_MS = 1000
 COLON_BLINK_OFF_MS = 1000
 
+# Screen update speed
+SCREEN_FRAME_UPDATE_DURATION_MS = 150
+
 ##########
 ### Utility functions
 ##########
