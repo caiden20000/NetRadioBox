@@ -82,7 +82,6 @@ COLON_BLINK_OFF_MS = 1000
 
 # Screen update speed
 SCREEN_FRAME_UPDATE_DURATION_MS = 150
-#TODO: Screen still updates fast?
 
 ##########
 ### Utility functions
@@ -205,11 +204,13 @@ class UserInterface:
         self.display.clear()
 
     def _schedule_draw(self, image: Image):
-        self.queued_image = image
         if self.update_timer is not None:
             self.update_timer.cancel()
+        # If it has been long enough since the last frame, draw the image.
         if time_now() - self.last_draw >= SCREEN_FRAME_UPDATE_DURATION_MS:
             self.display.ShowImage(self.display.getbuffer(image))
+            self.last_draw = time_now()
+        # Otherwise, come back in X ms to try again.
         else:
             self.update_timer = threading.Timer(SCREEN_FRAME_UPDATE_DURATION_MS / 1000, lambda: self._schedule_draw(image))
             self.update_timer.start()
