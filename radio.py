@@ -127,6 +127,10 @@ class UserInterface:
         self.max_chars = 13
         self.update_schedule_timer = None
 
+        self.queued_image = None
+        self.last_draw = time_now()
+        self.update_timer = None
+
     def _get_scrolling_track_name(self, max_chars: int = 13, scroll_speed: int = 300, ends_hold_multiple: int = 3):
         overflow_size = len(self.track_name) - max_chars
         # If length of text fits within bounds, we don't need to do anything
@@ -199,6 +203,17 @@ class UserInterface:
     def clear(self):
         self.display.clear()
 
+    def _schedule_draw(self, image: Image):
+        self.queued_image = image
+        if self.update_timer is not None:
+            self.update_timer.cancel()
+        if time_now() - self.last_draw >= SCREEN_FRAME_UPDATE_DURATION_MS:
+            self.display.ShowImage(self.display.getbuffer(image))
+        else:
+            self.update_timer = threading.Timer(SCREEN_FRAME_UPDATE_DURATION_MS / 1000, lambda: self._schedule_draw(image))
+            self.update_timer.start()
+
+
     def draw_ui(self):
         # Prevent redrawing identical content
         if self.update_required == False:
@@ -230,7 +245,7 @@ class UserInterface:
         if self.selected_mode == Mode.ALARM:   draw.line([(115, 42), (115, 44)], None, 3 if self.highlight_selector else 1)
         # Render drawings onto screen
         image = image.rotate(180)
-        self.display.ShowImage(self.display.getbuffer(image))
+        self._schedule_draw(image)
 
 
 class Player:
