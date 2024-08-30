@@ -48,6 +48,7 @@ class UserInterface:
 
         self.last_draw = time_now()
         self.update_timer = None
+        self.draw_lock = threading.Lock()
 
     def _get_scrolling_track_name(self, max_chars: int = 13, scroll_speed: int = 300, ends_hold_multiple: int = 3):
         overflow_size = len(self.track_name) - max_chars
@@ -122,18 +123,19 @@ class UserInterface:
         self.display.clear()
 
     def _schedule_draw(self, image: Image):
-        if self.update_timer is not None:
-            self.update_timer.cancel()
-        # If it has been long enough since the last frame, draw the image.
-        if time_now() - self.last_draw >= SCREEN_FRAME_UPDATE_DURATION_MS:
-            print("Drawing image, after ", time_now() - self.last_draw)
-            self.display.ShowImage(self.display.getbuffer(image))
-            self.last_draw = time_now()
-        # Otherwise, come back in X ms to try again.
-        else:
-            time_left = SCREEN_FRAME_UPDATE_DURATION_MS - (time_now() - self.last_draw)
-            self.update_timer = threading.Timer(time_left / 1000, lambda: self._schedule_draw(image))
-            self.update_timer.start()
+        with self.draw_lock:
+            if self.update_timer is not None:
+                self.update_timer.cancel()
+            # If it has been long enough since the last frame, draw the image.
+            if time_now() - self.last_draw >= SCREEN_FRAME_UPDATE_DURATION_MS:
+                self.last_draw = time_now()
+                print("Drawing image, after ", time_now() - self.last_draw)
+                self.display.ShowImage(self.display.getbuffer(image))
+            # Otherwise, come back in X ms to try again.
+            else:
+                time_left = SCREEN_FRAME_UPDATE_DURATION_MS - (time_now() - self.last_draw)
+                self.update_timer = threading.Timer(time_left / 1000, lambda: self._schedule_draw(image))
+                self.update_timer.start()
 
 
     def draw_ui(self):
