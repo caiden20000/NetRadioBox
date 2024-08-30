@@ -18,8 +18,9 @@ OLED_HEIGHT  = 64
 SCREEN_FRAME_UPDATE_DURATION_MS = 150
 
 # Default font location
-assetdir = os.path.realpath('asset') # For fonts
-FONT_RESOURCE = os.path.join(assetdir, 'noto_mono.ttf')
+# assetdir = os.path.realpath('asset') # For fonts
+# FONT_RESOURCE = os.path.join(assetdir, 'noto_mono.ttf')
+FONT_RESOURCE = os.path.join(os.path.dirname(__file__), 'asset/noto_mono.ttf')
 
 
 # Call set functions to update the UI.
