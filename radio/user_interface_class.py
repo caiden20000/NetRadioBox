@@ -5,8 +5,8 @@ User interface class for the radio.
 import threading
 import os
 import math
+import lib.OLED_1in51 as OLED_1in51
 from PIL import Image, ImageDraw, ImageFont
-from lib import OLED_1in51
 from constants import time_now
 from mode_enum import Mode
 

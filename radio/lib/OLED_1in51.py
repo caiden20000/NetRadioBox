@@ -6,7 +6,7 @@
 # *----------------
 # * | This version:   V1.0
 # * | Date        :   2022-07-14
-# * | Info        :   
+# * | Info        :
 # ******************************************************************************/
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documnetation files (the "Software"), to deal
@@ -28,9 +28,10 @@
 #
 
 # Modified line to import config in new file structure
-import config
+
 import time
-import numpy as np
+import lib.config as config
+# import config
 
 Device_SPI = config.Device_SPI
 Device_I2C = config.Device_I2C

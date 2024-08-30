@@ -37,7 +37,7 @@ It is for reference only.
 
 import sys, os
 assetdir = os.path.realpath('asset') # For fonts
-libdir = os.path.realpath('lib')     # For OLED_1in51.py 
+libdir = os.path.realpath('radio/lib')     # For OLED_1in51.py 
 if os.path.exists(libdir):
     sys.path.append(libdir)
 
