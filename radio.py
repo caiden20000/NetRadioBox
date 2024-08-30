@@ -450,7 +450,7 @@ class Clock:
             prestring = time.strftime('%H %M', time.gmtime(self._get_offset_time()))
         # Rip one leading zero (eg 01:00 -> 1:00, but 00:00 -> 0:00)
         if prestring[0] == '0':
-            prestring[0] = ' '  # Replace with space otherwise break monospace layout
+            prestring = ' ' + prestring[1:]  # Replace with space otherwise break monospace layout
         return prestring
     
     def get_alarm_time_string(self):
