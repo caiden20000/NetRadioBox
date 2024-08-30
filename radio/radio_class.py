@@ -37,6 +37,7 @@ class Radio:
         self.colon_blink_faceon = True
 
         self._sync_ui()
+        self._enable_colon_blink()
     
     def _enable_clock_blink(self):
         self.clock_blink_enabled = True
