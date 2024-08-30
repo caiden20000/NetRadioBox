@@ -440,13 +440,14 @@ class Clock:
         # Since we don't call the callback directly from the timer, we don't need to reinitialize.
 
     def _get_offset_time(self) -> int:
-        return time.gmtime() + self.current_time_offset
+        # return time.gmtime() + self.current_time_offset
+        return time.time() + self.current_time_offset
     
     def get_current_time_string(self, with_colon: bool = True):
         if with_colon:
-            prestring = time.strftime('%H:%M', self._get_offset_time())
+            prestring = time.strftime('%H:%M', time.gmtime(self._get_offset_time()))
         else:
-            prestring = time.strftime('%H %M', self._get_offset_time())
+            prestring = time.strftime('%H %M', time.gmtime(self._get_offset_time()))
         # Rip one leading zero (eg 01:00 -> 1:00, but 00:00 -> 0:00)
         if prestring[0] == '0':
             prestring[0] = ' '  # Replace with space otherwise break monospace layout
